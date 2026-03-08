@@ -1,11 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/SignUp.css';
 import { getAuthRedirectPath, logout, persistAuthSession, signUp, signUpWithGoogle } from '../services/authApi';
 import { getGoogleIdToken } from '../services/googleAuth';
 
+type SignUpFormData = {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
+
 function SignUp() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SignUpFormData>({
     username: '',
     email: '',
     password: '',
@@ -25,14 +33,17 @@ function SignUp() {
     }
   }, [location.pathname, navigate]);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const fieldName = name as keyof SignUpFormData;
+
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: value
+    }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     
@@ -70,8 +81,9 @@ function SignUp() {
       persistAuthSession(response);
       alert('Account created successfully!');
       navigate(getAuthRedirectPath(), { replace: true });
-    } catch (submitError) {
-      setError(submitError.message || 'Sign up failed');
+    } catch (submitError: unknown) {
+      const message = submitError instanceof Error ? submitError.message : 'Sign up failed';
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -88,8 +100,9 @@ function SignUp() {
       persistAuthSession(response);
       alert('Account created with Google successfully!');
       navigate(getAuthRedirectPath(), { replace: true });
-    } catch (googleError) {
-      setError(googleError.message || 'Google sign up failed');
+    } catch (googleError: unknown) {
+      const message = googleError instanceof Error ? googleError.message : 'Google sign up failed';
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }

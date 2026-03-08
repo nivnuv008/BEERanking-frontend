@@ -1,13 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/WelcomePage.css';
 import { getAuthRedirectPath, logout, persistAuthSession, signIn, signInWithGoogle } from '../services/authApi';
 import { getGoogleIdToken } from '../services/googleAuth';
 
+type SignInFormData = {
+  username: string;
+  password: string;
+};
+
 function WelcomePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SignInFormData>({
     username: '',
     password: ''
   });
@@ -23,14 +29,17 @@ function WelcomePage() {
     }
   }, [location.pathname, navigate]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const fieldName = name as keyof SignInFormData;
+
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [fieldName]: value
     }));
   };
 
-  const handleSignIn = async (e) => {
+  const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!formData.username || !formData.password) {
@@ -50,8 +59,9 @@ function WelcomePage() {
       persistAuthSession(response);
       alert('Signed in successfully!');
       navigate(getAuthRedirectPath(), { replace: true });
-    } catch (submitError) {
-      setError(submitError.message || 'Sign in failed');
+    } catch (submitError: unknown) {
+      const message = submitError instanceof Error ? submitError.message : 'Sign in failed';
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -68,8 +78,9 @@ function WelcomePage() {
       persistAuthSession(response);
       alert('Signed in with Google successfully!');
       navigate(getAuthRedirectPath(), { replace: true });
-    } catch (googleError) {
-      setError(googleError.message || 'Google sign in failed');
+    } catch (googleError: unknown) {
+      const message = googleError instanceof Error ? googleError.message : 'Google sign in failed';
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }

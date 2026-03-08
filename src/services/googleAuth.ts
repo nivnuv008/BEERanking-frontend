@@ -1,6 +1,39 @@
-let googleScriptPromise;
+let googleScriptPromise: Promise<void> | undefined;
 
-function loadGoogleScript() {
+type GoogleCredentialResponse = {
+  credential?: string;
+};
+
+type GoogleIdConfiguration = {
+  client_id: string;
+  callback: (response: GoogleCredentialResponse) => void;
+  cancel_on_tap_outside?: boolean;
+};
+
+type GoogleButtonConfiguration = {
+  type?: string;
+  theme?: string;
+  size?: string;
+  text?: string;
+  width?: number;
+};
+
+type GoogleAccountsId = {
+  initialize: (options: GoogleIdConfiguration) => void;
+  renderButton: (parent: HTMLElement, options: GoogleButtonConfiguration) => void;
+};
+
+declare global {
+  interface Window {
+    google?: {
+      accounts?: {
+        id?: GoogleAccountsId;
+      };
+    };
+  }
+}
+
+function loadGoogleScript(): Promise<void> {
   if (window.google?.accounts?.id) {
     return Promise.resolve();
   }
@@ -24,14 +57,14 @@ function loadGoogleScript() {
   return googleScriptPromise;
 }
 
-export async function getGoogleIdToken(clientId) {
+export async function getGoogleIdToken(clientId: string | undefined): Promise<string> {
   if (!clientId) {
     throw new Error('Missing Google Client ID (VITE_GOOGLE_CLIENT_ID)');
   }
 
   await loadGoogleScript();
 
-  return new Promise((resolve, reject) => {
+  return new Promise<string>((resolve, reject) => {
     const googleApi = window.google?.accounts?.id;
 
     if (!googleApi) {
@@ -74,7 +107,7 @@ export async function getGoogleIdToken(clientId) {
       });
 
       setTimeout(() => {
-        const button = container.querySelector('[role="button"]');
+        const button = container.querySelector<HTMLElement>('[role="button"]');
         if (button) {
           button.click();
         } else {
@@ -88,9 +121,9 @@ export async function getGoogleIdToken(clientId) {
         reject(new Error('Google sign-in timed out'));
       }, 60000);
 
-    } catch (error) {
+    } catch (error: unknown) {
       cleanup();
-      reject(error);
+      reject(error instanceof Error ? error : new Error('Google sign-in failed'));
     }
   });
 }

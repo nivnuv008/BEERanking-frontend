@@ -1,7 +1,89 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/WelcomePage.css';
+import { getAuthRedirectPath, logout, persistAuthSession, signIn, signInWithGoogle } from '../services/authApi';
+import { getGoogleIdToken } from '../services/googleAuth';
 
 function WelcomePage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [formData, setFormData] = useState({
+    username: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const redirectPath = getAuthRedirectPath();
+
+    if (token && redirectPath !== location.pathname) {
+      navigate(redirectPath, { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+
+    if (!formData.username || !formData.password) {
+      setError('Please enter username and password');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError('');
+
+      const response = await signIn({
+        username: formData.username.trim(),
+        password: formData.password
+      });
+
+      persistAuthSession(response);
+      alert('Signed in successfully!');
+      navigate(getAuthRedirectPath(), { replace: true });
+    } catch (submitError) {
+      setError(submitError.message || 'Sign in failed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsSubmitting(true);
+      setError('');
+
+      const googleToken = await getGoogleIdToken(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+      const response = await signInWithGoogle(googleToken);
+
+      persistAuthSession(response);
+      alert('Signed in with Google successfully!');
+      navigate(getAuthRedirectPath(), { replace: true });
+    } catch (googleError) {
+      setError(googleError.message || 'Google sign in failed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCreateAccount = () => {
+    navigate('/signup');
+  };
+
+  const handleClearSession = () => {
+    logout();
+    window.location.reload();
+  };
+
   return (
     <div className="welcome-container">
 
@@ -20,23 +102,33 @@ function WelcomePage() {
         <div className="login-container">
           <h2 className="login-title">Log into BEERanking</h2>
           
-          <form className="login-form">
+          <form className="login-form" onSubmit={handleSignIn}>
+            {error && <div className="error-message">{error}</div>}
+
             <input 
+              name="username"
               type="text" 
               placeholder="Username" 
               className="form-input"
+              value={formData.username}
+              onChange={handleChange}
+              disabled={isSubmitting}
             />
             <input 
+              name="password"
               type="password" 
               placeholder="Password" 
               className="form-input"
+              value={formData.password}
+              onChange={handleChange}
+              disabled={isSubmitting}
             />
             
-            <button type="submit" className="btn btn-login">
-              Log in
+            <button type="submit" className="btn btn-login" disabled={isSubmitting}>
+              {isSubmitting ? 'Signing in...' : 'Log in'}
             </button>
             
-            <button type="button" className="btn btn-google">
+            <button type="button" className="btn btn-google" onClick={handleGoogleSignIn} disabled={isSubmitting}>
               <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
                 <g fill="none" fillRule="evenodd">
                   <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
@@ -48,7 +140,7 @@ function WelcomePage() {
               Continue with Google
             </button>
             
-            <button type="button" className="btn btn-create-account">
+            <button type="button" className="btn btn-create-account" onClick={handleCreateAccount}>
               Create new account
             </button>
           </form>

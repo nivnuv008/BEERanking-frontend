@@ -80,7 +80,6 @@ function SignUp() {
       });
 
       persistAuthSession(response);
-      alert('Account created successfully!');
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (submitError: unknown) {
       const message = submitError instanceof Error ? submitError.message : 'Sign up failed';
@@ -99,7 +98,6 @@ function SignUp() {
       const response = await signUpWithGoogle(googleToken);
 
       persistAuthSession(response);
-      alert('Account created with Google successfully!');
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (googleError: unknown) {
       const message = googleError instanceof Error ? googleError.message : 'Google sign up failed';

@@ -1,5 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-const AUTH_REDIRECT_PATH = import.meta.env.VITE_AUTH_REDIRECT_PATH || '/';
+const AUTH_REDIRECT_PATH = import.meta.env.VITE_AUTH_REDIRECT_PATH || '/profile';
 
 type AuthUser = Record<string, unknown>;
 
@@ -81,6 +81,33 @@ export function persistAuthSession(authResponse: AuthResponse | null | undefined
   if (user) {
     localStorage.setItem('user', JSON.stringify(user));
   }
+}
+
+export function getStoredUser<T = AuthUser>(): T | null {
+  const rawUser = localStorage.getItem('user');
+
+  if (!rawUser) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(rawUser) as T;
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredUser(user: AuthUser | null | undefined): void {
+  if (!user) {
+    localStorage.removeItem('user');
+    return;
+  }
+
+  localStorage.setItem('user', JSON.stringify(user));
+}
+
+export function getAuthToken(): string | null {
+  return localStorage.getItem('token');
 }
 
 export function getAuthRedirectPath() {

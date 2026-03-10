@@ -58,7 +58,6 @@ function WelcomePage() {
       });
 
       persistAuthSession(response);
-      alert('Signed in successfully!');
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (submitError: unknown) {
       const message = submitError instanceof Error ? submitError.message : 'Sign in failed';
@@ -77,7 +76,6 @@ function WelcomePage() {
       const response = await signInWithGoogle(googleToken);
 
       persistAuthSession(response);
-      alert('Signed in with Google successfully!');
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (googleError: unknown) {
       const message = googleError instanceof Error ? googleError.message : 'Google sign in failed';

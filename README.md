@@ -23,7 +23,7 @@ Create a `.env` file in the frontend root:
 VITE_API_BASE_URL=/api
 VITE_BACKEND_URL=http://localhost:3000
 VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-VITE_AUTH_REDIRECT_PATH=/home
+VITE_AUTH_REDIRECT_PATH=/profile
 ```
 
 - `VITE_API_BASE_URL` is used by auth requests.

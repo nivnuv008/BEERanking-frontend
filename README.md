@@ -14,3 +14,21 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Auth environment variables
+
+Create a `.env` file in the frontend root:
+
+```env
+VITE_API_BASE_URL=/api
+VITE_BACKEND_URL=http://localhost:3000
+VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+VITE_AUTH_REDIRECT_PATH=/home
+```
+
+- `VITE_API_BASE_URL` is used by auth requests.
+- `VITE_BACKEND_URL` is used by Vite dev proxy for `/api`.
+- `VITE_GOOGLE_CLIENT_ID` is required for Google sign-in/sign-up.
+- `VITE_AUTH_REDIRECT_PATH` is where authenticated users are redirected from auth pages.
+
+Your backend also needs `GOOGLE_CLIENT_ID` with the same value for token verification.

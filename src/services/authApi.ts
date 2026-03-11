@@ -1,5 +1,8 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 const AUTH_REDIRECT_PATH = import.meta.env.VITE_AUTH_REDIRECT_PATH || '/profile';
+const SIGN_IN_PATH = '/';
+
+let refreshRequest: Promise<string> | null = null;
 
 type AuthUser = Record<string, unknown>;
 
@@ -22,6 +25,12 @@ type SignInPayload = {
 
 type ErrorResponse = {
   error?: string;
+  message?: string;
+};
+
+type RefreshResponse = {
+  token?: string;
+  refreshToken?: string;
   message?: string;
 };
 
@@ -110,8 +119,108 @@ export function getAuthToken(): string | null {
   return localStorage.getItem('token');
 }
 
+export function getRefreshToken(): string | null {
+  return localStorage.getItem('refreshToken');
+}
+
 export function getAuthRedirectPath() {
   return AUTH_REDIRECT_PATH;
+}
+
+function setStoredTokens(token: string, refreshToken: string): void {
+  localStorage.setItem('token', token);
+  localStorage.setItem('refreshToken', refreshToken);
+}
+
+function withAuthorizationHeader(token: string, headers?: HeadersInit): Headers {
+  const normalizedHeaders = new Headers(headers);
+  normalizedHeaders.set('Authorization', `Bearer ${token}`);
+  return normalizedHeaders;
+}
+
+export async function refreshAuthToken(): Promise<string> {
+  const storedRefreshToken = getRefreshToken();
+
+  if (!storedRefreshToken) {
+    return handleInvalidAuthSession();
+  }
+
+  if (!refreshRequest) {
+    refreshRequest = (async () => {
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: storedRefreshToken })
+      });
+
+      let data: unknown = null;
+
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+
+      const payload = data as RefreshResponse | ErrorResponse | null;
+
+      if (!response.ok) {
+        const message = payload?.error || payload?.message || 'You need to sign in again';
+        return handleInvalidAuthSession(message);
+      }
+
+      const token = payload?.token;
+      const refreshToken = payload?.refreshToken;
+
+      if (!token || !refreshToken) {
+        return handleInvalidAuthSession('Authentication refresh failed');
+      }
+
+      setStoredTokens(token, refreshToken);
+      return token;
+    })().finally(() => {
+      refreshRequest = null;
+    });
+  }
+
+  return refreshRequest;
+}
+
+export async function fetchWithAuth(input: string, init: RequestInit = {}): Promise<Response> {
+  const executeRequest = async (token: string) => {
+    const headers = withAuthorizationHeader(token, init.headers);
+    return fetch(input, {
+      ...init,
+      headers
+    });
+  };
+
+  const currentToken = getAuthToken();
+  const token = currentToken || (await refreshAuthToken());
+
+  let response = await executeRequest(token);
+
+  if (response.status !== 401) {
+    return response;
+  }
+
+  const refreshedToken = await refreshAuthToken();
+  response = await executeRequest(refreshedToken);
+
+  if (response.status === 401) {
+    return handleInvalidAuthSession('You need to sign in again');
+  }
+
+  return response;
+}
+
+export function handleInvalidAuthSession(message = 'You need to sign in again'): never {
+  logout();
+
+  if (typeof window !== 'undefined' && window.location.pathname !== SIGN_IN_PATH) {
+    window.location.replace(SIGN_IN_PATH);
+  }
+
+  throw new Error(message);
 }
 
 export function logout(): void {

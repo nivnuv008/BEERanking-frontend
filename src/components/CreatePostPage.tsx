@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/CreatePostPage.css';
-import { getAuthToken, logout } from '../services/authApi';
+import { getAuthToken } from '../services/authApi';
 import { searchBeers, type Beer } from '../services/profileApi';
 import { createPost } from '../services/postApi';
 
@@ -382,11 +382,6 @@ function CreatePostPage() {
     } catch (submitError: unknown) {
       const message = submitError instanceof Error ? submitError.message : 'Failed to create post';
       setError(message);
-
-      if (message.toLowerCase().includes('sign in') || message.toLowerCase().includes('unauthorized')) {
-        logout();
-        navigate('/', { replace: true });
-      }
     } finally {
       setIsSubmitting(false);
     }

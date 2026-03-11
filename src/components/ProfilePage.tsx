@@ -75,11 +75,6 @@ function ProfilePage() {
       } catch (loadError: unknown) {
         const message = loadError instanceof Error ? loadError.message : 'Failed to load profile';
         setError(message);
-
-        if (message.toLowerCase().includes('sign in') || message.toLowerCase().includes('unauthorized')) {
-          logout();
-          navigate('/', { replace: true });
-        }
       } finally {
         setIsLoading(false);
       }

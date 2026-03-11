@@ -1,4 +1,4 @@
-import { getAuthToken } from './authApi';
+import { fetchWithAuth } from './authApi';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -28,18 +28,6 @@ type ErrorResponse = {
   message?: string;
 };
 
-function getAuthHeaders(): HeadersInit {
-  const token = getAuthToken();
-
-  if (!token) {
-    throw new Error('You need to sign in again');
-  }
-
-  return {
-    Authorization: `Bearer ${token}`
-  };
-}
-
 async function parseJsonResponse<T>(response: Response): Promise<T> {
   let data: unknown = null;
 
@@ -51,7 +39,9 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
 
   if (!response.ok) {
     const errorData = data as ErrorResponse | null;
-    throw new Error(errorData?.error || errorData?.message || 'Request failed');
+    const message = errorData?.error || errorData?.message || 'Request failed';
+
+    throw new Error(message);
   }
 
   return data as T;
@@ -68,9 +58,8 @@ export async function createPost(payload: CreatePostPayload): Promise<CreatePost
 
   formData.append('description', payload.description.trim());
 
-  const response = await fetch(`${API_BASE_URL}/posts`, {
+  const response = await fetchWithAuth(`${API_BASE_URL}/posts`, {
     method: 'POST',
-    headers: getAuthHeaders(),
     body: formData
   });
 

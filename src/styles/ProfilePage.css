@@ -13,6 +13,7 @@
   position: relative;
   height: 100%;
   overflow: hidden;
+  border-radius: 30px;
   background:
     radial-gradient(circle at top left, rgba(255, 208, 120, 0.55), transparent 38%),
     radial-gradient(circle at bottom right, rgba(143, 76, 34, 0.22), transparent 30%),
@@ -40,8 +41,7 @@
 }
 
 .profile-page__content-shell {
-  padding-top: 0.15rem;
-  padding-bottom: 0.2rem;
+  padding: 0.95rem 1rem 0.2rem;
 }
 
 .profile-page__topbar {
@@ -49,28 +49,34 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.profile-page__intro-copy {
+  flex: 1 1 auto;
+  align-self: flex-start;
 }
 
 .profile-page__eyebrow {
-  margin-bottom: 0.5rem;
-  color: var(--profile-accent-deep);
-  font-size: 0.82rem;
-  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: #7b341e;
+  font-size: 0.78rem;
+  font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
 .profile-page__headline {
-  max-width: 10ch;
+  max-width: none;
   margin: 0;
-  font-size: clamp(1.55rem, 2.3vw, 2.6rem);
-  line-height: 0.98;
+  font-size: clamp(1.5rem, 2.2vw, 2.3rem);
+  line-height: 0.96;
   font-weight: 800;
 }
 
 .profile-page__actions {
   display: flex;
+  align-self: flex-start;
   gap: 0.75rem;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -371,6 +377,10 @@
 }
 
 @media (max-width: 576px) {
+  .profile-page {
+    border-radius: 22px;
+  }
+
   .profile-card,
   .profile-page__status-card {
     padding: 0.95rem;

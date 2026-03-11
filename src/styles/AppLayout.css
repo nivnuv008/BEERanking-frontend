@@ -16,7 +16,9 @@
 .app-shell__content {
   padding: 1rem;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .app-navbar {

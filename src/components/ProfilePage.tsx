@@ -375,9 +375,9 @@ function ProfilePage() {
   return (
     <div className="profile-page">
       <div className="profile-page__backdrop" />
-      <div className="profile-page__content container profile-page__content-shell">
+      <div className="profile-page__content container-fluid profile-page__content-shell">
         <div className="profile-page__topbar">
-          <div>
+          <div className="profile-page__intro-copy">
             <p className="profile-page__eyebrow">BEERanking profile</p>
             <h1 className="profile-page__headline">Your profile, your favorite pours, your beer story.</h1>
           </div>

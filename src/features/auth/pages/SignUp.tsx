@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import '../styles/SignUp.css';
-import { getAuthRedirectPath, logout, persistAuthSession, signUp, signUpWithGoogle } from '../services/authApi';
-import { getGoogleIdToken } from '../services/googleAuth';
-import GoogleLogo from '../assets/google-logo.svg';
+import { getAuthRedirectPath, persistAuthSession, signUp, signUpWithGoogle } from '../api/authApi';
+import { getGoogleIdToken } from '../api/googleAuth';
+import GoogleLogo from '../../../shared/assets/google-logo.svg';
 
 type SignUpFormData = {
   username: string;
@@ -105,11 +104,6 @@ function SignUp() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleClearSession = () => {
-    logout();
-    window.location.reload();
   };
 
   return (

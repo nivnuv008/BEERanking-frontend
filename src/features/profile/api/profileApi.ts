@@ -1,6 +1,6 @@
-import { fetchWithAuth, setStoredUser } from './authApi';
+import { API_BASE_URL, parseJsonResponse } from '../../../shared/api/apiClient';
+import { fetchWithAuth, setStoredUser } from '../../auth/api/authApi';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 export type Beer = {
@@ -30,30 +30,6 @@ type UpdateProfileResponse = {
   message: string;
   user: UserProfile;
 };
-
-type ErrorResponse = {
-  error?: string;
-  message?: string;
-};
-
-async function parseJsonResponse<T>(response: Response): Promise<T> {
-  let data: unknown = null;
-
-  try {
-    data = await response.json();
-  } catch {
-    data = null;
-  }
-
-  if (!response.ok) {
-    const errorData = data as ErrorResponse | null;
-    const message = errorData?.error || errorData?.message || 'Request failed';
-
-    throw new Error(message);
-  }
-
-  return data as T;
-}
 
 export async function getCurrentUserProfile(): Promise<UserProfile> {
   const response = await fetchWithAuth(`${API_BASE_URL}/users/me`);

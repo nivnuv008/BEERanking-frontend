@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
 import '../styles/CreatePostPage.css';
-import { getAuthToken } from '../services/authApi';
-import { searchBeers, type Beer } from '../services/profileApi';
-import { createPost } from '../services/postApi';
+import { getAuthToken } from '../../auth/api/authApi';
+import { searchBeers, type Beer } from '../../profile/api/profileApi';
+import { createPost } from '../api/postApi';
 
 const DESCRIPTION_LIMIT = 1000;
 
@@ -17,9 +18,7 @@ function CreatePostPage() {
   const searchTimeoutRef = useRef<number | null>(null);
   const successTimeoutRef = useRef<number | null>(null);
   const previewUrlRef = useRef<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const cameraStreamRef = useRef<MediaStream | null>(null);
+  const cameraCaptureRef = useRef<CameraCaptureHandle | null>(null);
   const [beerQuery, setBeerQuery] = useState('');
   const [beerResults, setBeerResults] = useState<Beer[]>([]);
   const [selectedBeer, setSelectedBeer] = useState<Beer | null>(null);
@@ -30,25 +29,8 @@ function CreatePostPage() {
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [isCameraReady, setIsCameraReady] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-
-  const stopCameraStream = () => {
-    if (!cameraStreamRef.current) {
-      return;
-    }
-
-    cameraStreamRef.current.getTracks().forEach((track) => track.stop());
-    cameraStreamRef.current = null;
-
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-
-    setIsCameraReady(false);
-  };
 
   useEffect(() => {
     if (!getAuthToken()) {
@@ -58,8 +40,6 @@ function CreatePostPage() {
 
   useEffect(() => {
     return () => {
-      stopCameraStream();
-
       if (successTimeoutRef.current) {
         window.clearTimeout(successTimeoutRef.current);
       }
@@ -73,39 +53,6 @@ function CreatePostPage() {
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (!isCameraOpen || !videoRef.current || !cameraStreamRef.current) {
-      return;
-    }
-
-    const videoElement = videoRef.current;
-    const stream = cameraStreamRef.current;
-
-    const markReady = () => {
-      if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
-        setIsCameraReady(true);
-        void videoElement.play();
-      }
-    };
-
-    setIsCameraReady(false);
-    videoElement.srcObject = stream;
-
-    videoElement.addEventListener('loadedmetadata', markReady);
-    videoElement.addEventListener('canplay', markReady);
-    void videoElement.play().catch(() => {
-      // Media readiness is still handled by the listeners above.
-    });
-
-    const readyCheckTimeout = window.setTimeout(markReady, 300);
-
-    return () => {
-      window.clearTimeout(readyCheckTimeout);
-      videoElement.removeEventListener('loadedmetadata', markReady);
-      videoElement.removeEventListener('canplay', markReady);
-    };
-  }, [isCameraOpen]);
 
   useEffect(() => {
     const normalizedQuery = beerQuery.trim();
@@ -183,8 +130,7 @@ function CreatePostPage() {
     }
 
     resetImagePreview();
-    stopCameraStream();
-    setIsCameraOpen(false);
+    cameraCaptureRef.current?.closeCamera();
 
     const previewUrl = URL.createObjectURL(file);
     previewUrlRef.current = previewUrl;
@@ -230,8 +176,7 @@ function CreatePostPage() {
   };
 
   const handleResetForm = () => {
-    stopCameraStream();
-    setIsCameraOpen(false);
+    cameraCaptureRef.current?.closeCamera();
     setSelectedBeer(null);
     setBeerQuery('');
     setBeerResults([]);
@@ -239,89 +184,6 @@ function CreatePostPage() {
     setDescription('');
     setImageFile(null);
     resetImagePreview();
-  };
-
-  const handleStartCamera = async () => {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setError('Camera access is not supported in this browser');
-      return;
-    }
-
-    try {
-      setError('');
-      setSuccessMessage('');
-      stopCameraStream();
-      setIsCameraReady(false);
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment'
-        },
-        audio: false
-      });
-
-      resetImagePreview();
-      setImageFile(null);
-      cameraStreamRef.current = stream;
-      setIsCameraOpen(true);
-    } catch (cameraError: unknown) {
-      const message = cameraError instanceof Error ? cameraError.message : 'Unable to open camera';
-      setError(message);
-      setIsCameraOpen(false);
-      setIsCameraReady(false);
-    }
-  };
-
-  const handleCapturePhoto = async () => {
-    if (!videoRef.current || !canvasRef.current) {
-      return;
-    }
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const width = video.videoWidth;
-    const height = video.videoHeight;
-
-    if (!width || !height) {
-      setError('Camera is not ready yet');
-      return;
-    }
-
-    canvas.width = width;
-    canvas.height = height;
-
-    const context = canvas.getContext('2d');
-
-    if (!context) {
-      setError('Unable to capture image from camera');
-      return;
-    }
-
-    context.drawImage(video, 0, 0, width, height);
-
-    const file = await new Promise<File | null>((resolve) => {
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          resolve(null);
-          return;
-        }
-
-        resolve(new File([blob], 'camera-post-photo.jpg', { type: 'image/jpeg' }));
-      }, 'image/jpeg', 0.92);
-    });
-
-    if (!file) {
-      setError('Unable to capture image from camera');
-      return;
-    }
-
-    handleFileSelected(file);
-  };
-
-  const handleCloseCamera = () => {
-    stopCameraStream();
-    setIsCameraOpen(false);
-    setIsCameraReady(false);
   };
 
   const getMatchedBeer = () => {
@@ -372,7 +234,7 @@ function CreatePostPage() {
       const response = await createPost({
         imageFile: imageFile!,
         rating,
-        beerId: '69b170ef40c0fa99da66a9df',
+        beerId: '69b2fcae7f629d1c03e0be76',
         // beerId: beerToSubmit?._id,
         description
       });
@@ -408,7 +270,7 @@ function CreatePostPage() {
 
       <div className="create-post-page__backdrop" />
       <div className="create-post-page__shell container-fluid">
-        <div className="create-post-page__intro d-flex align-items-center justify-content-between gap-3">
+        <div className="d-flex flex-column flex-xl-row align-items-start align-items-xl-center justify-content-between gap-3 mb-2">
           <div>
             <p className="create-post-page__eyebrow">Share a pour</p>
             <h1 className="create-post-page__headline">Post the beer.</h1>
@@ -418,75 +280,92 @@ function CreatePostPage() {
 
         <div className="row g-3 create-post-page__grid">
           <div className="col-xl-5">
-            <section className="create-post-card create-post-card--media h-100">
-              <div className="create-post-card__header">
+            <section className="create-post-card d-flex flex-column justify-content-start h-100">
+              <div className="d-flex align-items-start justify-content-between gap-3 mb-2">
                 <div>
                   <p className="create-post-card__eyebrow">Image</p>
                   <h2 className="create-post-card__title">Show the pour</h2>
                 </div>
                 {imageFile ? <span className="create-post-card__badge">Ready to upload</span> : null}
               </div>
-
-              <label
-                className={`create-post-uploader${isDraggingFile ? ' create-post-uploader--dragging' : ''}${imagePreview ? ' create-post-uploader--has-image' : ''}`}
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
+              <CameraCapture
+                ref={cameraCaptureRef}
+                facingMode="environment"
+                fileName="camera-post-photo.jpg"
+                previewClassName="create-post-uploader__preview create-post-uploader__camera-preview"
+                onCapture={handleFileSelected}
+                onError={setError}
               >
-                <input type="file" accept="image/*" className="create-post-uploader__input" onChange={handleImageChange} />
-
-                {isCameraOpen ? (
-                  <video ref={videoRef} className="create-post-uploader__preview create-post-uploader__camera-preview" autoPlay muted playsInline />
-                ) : imagePreview ? (
+                {({ isOpen, isReady, preview, openCamera, capturePhoto, closeCamera }) => (
                   <>
-                    <img src={imagePreview} alt="Preview of the post to be uploaded" className="create-post-uploader__preview" />
-                    <div className="create-post-uploader__overlay">
-                      <span>Replace image</span>
+                    <label
+                      className={`create-post-uploader${isDraggingFile ? ' create-post-uploader--dragging' : ''}`}
+                      onDrop={handleDrop}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                    >
+                      <input type="file" accept="image/*" className="create-post-uploader__input" onChange={handleImageChange} />
+
+                      {isOpen ? preview : imagePreview ? (
+                        <>
+                          <img src={imagePreview} alt="Preview of the post to be uploaded" className="create-post-uploader__preview" />
+                          <div className="create-post-uploader__overlay">
+                            <span>Replace image</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="create-post-uploader__placeholder">
+                          <span className="create-post-uploader__icon">+</span>
+                          <strong>Drop an image here</strong>
+                          <p>or click to browse from your device</p>
+                        </div>
+                      )}
+                    </label>
+
+                    <div className="d-flex flex-wrap justify-content-center gap-2 mt-2">
+                      {!isOpen ? (
+                        <button
+                          type="button"
+                          className="btn create-post-camera-button"
+                          onClick={() => {
+                            setError('');
+                            setSuccessMessage('');
+                            resetImagePreview();
+                            setImageFile(null);
+                            openCamera();
+                          }}
+                        >
+                          Use camera
+                        </button>
+                      ) : (
+                        <>
+                          <button type="button" className="btn create-post-camera-button" onClick={capturePhoto} disabled={!isReady}>
+                            {isReady ? 'Take photo' : 'Preparing camera...'}
+                          </button>
+                          <button type="button" className="btn create-post-camera-button create-post-camera-button--ghost" onClick={closeCamera}>
+                            Close camera
+                          </button>
+                        </>
+                      )}
                     </div>
                   </>
-                ) : (
-                  <div className="create-post-uploader__placeholder">
-                    <span className="create-post-uploader__icon">+</span>
-                    <strong>Drop an image here</strong>
-                    <p>or click to browse from your device</p>
-                  </div>
                 )}
-              </label>
-
-              <div className="create-post-camera-actions d-flex flex-wrap justify-content-center gap-2">
-                {!isCameraOpen ? (
-                  <button type="button" className="btn create-post-camera-button" onClick={handleStartCamera}>
-                    Use camera
-                  </button>
-                ) : (
-                  <>
-                    <button type="button" className="btn create-post-camera-button" onClick={handleCapturePhoto} disabled={!isCameraReady}>
-                      {isCameraReady ? 'Take photo' : 'Preparing camera...'}
-                    </button>
-                    <button type="button" className="btn create-post-camera-button create-post-camera-button--ghost" onClick={handleCloseCamera}>
-                      Close camera
-                    </button>
-                  </>
-                )}
-              </div>
-
-              <canvas ref={canvasRef} className="create-post-camera-canvas" />
+              </CameraCapture>
 
               <div className="create-post-card__meta-strip">
                 <div>
                   <span className="create-post-card__meta-label">File</span>
-                  <strong>{imageFile?.name || (isCameraOpen ? 'Live camera capture' : 'No image selected')}</strong>
+                  <strong>{imageFile?.name || 'No image selected'}</strong>
                 </div>
                 <button
                   type="button"
                   className="btn create-post-card__ghost-button"
                   onClick={() => {
-                    stopCameraStream();
-                    setIsCameraOpen(false);
+                    cameraCaptureRef.current?.closeCamera();
                     setImageFile(null);
                     resetImagePreview();
                   }}
-                  disabled={(!imageFile && !isCameraOpen) || isSubmitting}
+                  disabled={!imageFile || isSubmitting}
                 >
                   Remove
                 </button>
@@ -496,7 +375,7 @@ function CreatePostPage() {
 
           <div className="col-xl-7">
             <section className="create-post-card h-100">
-              <div className="create-post-card__header">
+              <div className="d-flex align-items-start justify-content-between gap-3 mb-2">
                 <div>
                   <p className="create-post-card__eyebrow">Details</p>
                   <h2 className="create-post-card__title">Write the post</h2>
@@ -506,16 +385,16 @@ function CreatePostPage() {
 
               {error ? <div className="alert alert-danger create-post-card__alert">{error}</div> : null}
 
-              <div className="row g-3 create-post-form__top-grid">
+              <div className="row g-3">
                 <div className="col-lg-7">
-                  <div className="create-post-form__section create-post-form__section--tight">
+                  <div className="create-post-form__section h-100">
                     <p className="create-post-form__todo">
                       TODO: when the beer search API is ready, make this field required and submit the selected beer id.
                     </p>
                     <label htmlFor="beer-query" className="create-post-form__label">
                       Beer (optional for now)
                     </label>
-                    <div className="create-post-search">
+                    <div className="d-flex flex-column flex-md-row gap-3">
                       <input
                         id="beer-query"
                         type="text"
@@ -579,7 +458,7 @@ function CreatePostPage() {
                 </div>
 
                 <div className="col-lg-5">
-                  <div className="create-post-form__section create-post-form__section--tight">
+                  <div className="create-post-form__section h-100">
                     <label className="create-post-form__label">Rating</label>
                     <div className="rating-picker" role="radiogroup" aria-label="Beer rating">
                       {[1, 2, 3, 4, 5].map((value) => (
@@ -616,13 +495,13 @@ function CreatePostPage() {
                     setSuccessMessage('');
                   }}
                 />
-                <div className="create-post-form__footer-note">
+                <div className="create-post-form__footer-note d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3">
                   <span>Backend limit: {DESCRIPTION_LIMIT} characters.</span>
                   <strong>{descriptionLength}/{DESCRIPTION_LIMIT}</strong>
                 </div>
               </div>
 
-              <div className="create-post-form__actions d-flex justify-content-end gap-3">
+              <div className="d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-end gap-3 mt-3">
                 <button type="button" className="btn create-post-card__ghost-button" onClick={handleResetForm} disabled={isSubmitting}>
                   Reset
                 </button>

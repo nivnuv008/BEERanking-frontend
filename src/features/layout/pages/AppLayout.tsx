@@ -13,13 +13,13 @@ function AppLayout() {
     <div className="app-shell">
       <header className="app-shell__header">
         <nav className="navbar navbar-expand-lg app-navbar">
-          <div className="container-fluid app-navbar__inner">
+          <div className="container-fluid d-flex align-items-center gap-3">
             <NavLink to="/feed" className="app-navbar__brand">
               BEERanking
             </NavLink>
 
             <button
-              className="navbar-toggler app-navbar__toggler"
+              className="navbar-toggler ms-auto app-navbar__toggler"
               type="button"
               aria-controls="beeranking-navbar"
               aria-expanded={isMenuOpen}
@@ -30,7 +30,7 @@ function AppLayout() {
             </button>
 
             <div className={`navbar-collapse app-navbar__collapse${isMenuOpen ? ' app-navbar__collapse--open' : ''}`} id="beeranking-navbar">
-              <div className="navbar-nav app-navbar__links">
+              <div className="navbar-nav gap-2 mx-lg-auto my-3 my-lg-0 align-items-stretch align-items-lg-center">
                 <NavLink to="/feed" onClick={handleNavigate} className={({ isActive }) => `app-navbar__link${isActive ? ' app-navbar__link--active' : ''}`}>
                   Feed
                 </NavLink>

@@ -1,6 +1,5 @@
-import { fetchWithAuth } from './authApi';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+import { API_BASE_URL, parseJsonResponse } from '../../../shared/api/apiClient';
+import { fetchWithAuth } from '../../auth/api/authApi';
 
 export type CreatedPost = {
   _id: string;
@@ -22,30 +21,6 @@ type CreatePostPayload = {
   beerId?: string | null;
   description: string;
 };
-
-type ErrorResponse = {
-  error?: string;
-  message?: string;
-};
-
-async function parseJsonResponse<T>(response: Response): Promise<T> {
-  let data: unknown = null;
-
-  try {
-    data = await response.json();
-  } catch {
-    data = null;
-  }
-
-  if (!response.ok) {
-    const errorData = data as ErrorResponse | null;
-    const message = errorData?.error || errorData?.message || 'Request failed';
-
-    throw new Error(message);
-  }
-
-  return data as T;
-}
 
 export async function createPost(payload: CreatePostPayload): Promise<CreatePostResponse> {
   const formData = new FormData();

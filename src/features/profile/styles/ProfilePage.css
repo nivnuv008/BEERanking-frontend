@@ -36,25 +36,10 @@
   position: relative;
   z-index: 1;
   height: 100%;
-  display: flex;
-  flex-direction: column;
 }
 
 .profile-page__content-shell {
   padding: 0.95rem 1rem 0.2rem;
-}
-
-.profile-page__topbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
-}
-
-.profile-page__intro-copy {
-  flex: 1 1 auto;
-  align-self: flex-start;
 }
 
 .profile-page__eyebrow {
@@ -72,14 +57,6 @@
   font-size: clamp(1.5rem, 2.2vw, 2.3rem);
   line-height: 0.96;
   font-weight: 800;
-}
-
-.profile-page__actions {
-  display: flex;
-  align-self: flex-start;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
 }
 
 .profile-page__primary-button,
@@ -123,20 +100,6 @@
   overflow: hidden;
 }
 
-.profile-card--identity {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.profile-card__photo-shell {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 0.5rem;
-}
-
 .profile-card__photo {
   width: 140px;
   height: 140px;
@@ -157,21 +120,6 @@
   color: #fff7ed;
   font-size: 2.8rem;
   font-weight: 800;
-}
-
-.profile-card__photo-tools {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.profile-card__camera-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.45rem;
 }
 
 .profile-card__camera-button {
@@ -197,10 +145,6 @@
 .profile-card__camera-button--ghost:hover,
 .profile-card__camera-button--ghost:focus {
   color: var(--profile-ink);
-}
-
-.profile-card__capture-canvas {
-  display: none;
 }
 
 .profile-card__identity-copy {
@@ -240,24 +184,12 @@
   margin-top: 0.7rem;
 }
 
-.profile-card__section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.65rem;
-}
-
 .profile-card__count {
   padding: 0.35rem 0.7rem;
   border-radius: 999px;
   background: rgba(192, 88, 27, 0.12);
   color: var(--profile-accent-deep);
   font-weight: 700;
-}
-
-.profile-card__editor-tools {
-  margin-bottom: 0.55rem;
 }
 
 .profile-card__search-results {
@@ -353,16 +285,8 @@
 }
 
 @media (max-width: 991px) {
-  .profile-page__topbar {
-    flex-direction: column;
-  }
-
   .profile-page__headline {
     max-width: 100%;
-  }
-
-  .profile-page__actions {
-    justify-content: flex-start;
   }
 
   .profile-page__content {

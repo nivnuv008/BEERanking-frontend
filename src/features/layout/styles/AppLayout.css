@@ -29,12 +29,6 @@
   box-shadow: 0 20px 40px rgba(83, 50, 25, 0.1);
 }
 
-.app-navbar__inner {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
 .app-navbar__brand {
   color: #7b341e;
   font-size: 1.2rem;
@@ -45,15 +39,7 @@
 }
 
 .app-navbar__toggler {
-  margin-left: auto;
   border-color: rgba(123, 52, 30, 0.2);
-}
-
-.app-navbar__links {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0 auto;
 }
 
 .app-navbar__collapse {
@@ -99,10 +85,6 @@
 }
 
 @media (max-width: 991px) {
-  .app-navbar__toggler {
-    margin-left: auto;
-  }
-
   .app-navbar__collapse {
     display: none;
     width: 100%;
@@ -110,11 +92,6 @@
 
   .app-navbar__collapse--open {
     display: block;
-  }
-
-  .app-navbar__links {
-    margin: 1rem 0;
-    align-items: stretch;
   }
 
   .app-navbar__link {

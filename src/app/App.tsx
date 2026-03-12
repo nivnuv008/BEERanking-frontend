@@ -1,12 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import AppLayout from './components/AppLayout'
-import CreatePostPage from './components/CreatePostPage'
-import FeedPage from './components/FeedPage'
-import MyPostsPage from './components/MyPostsPage'
-import WelcomePage from './components/WelcomePage'
-import SignUp from './components/SignUp'
-import ProfilePage from './components/ProfilePage'
-import './App.css'
+import SignUp from '../features/auth/pages/SignUp'
+import FeedPage from '../features/feed/pages/FeedPage'
+import AppLayout from '../features/layout/pages/AppLayout'
+import CreatePostPage from '../features/posts/pages/CreatePostPage'
+import MyPostsPage from '../features/posts/pages/MyPostsPage'
+import ProfilePage from '../features/profile/pages/ProfilePage'
+import WelcomePage from '../features/welcome/pages/WelcomePage'
 
 function App() {
   return (

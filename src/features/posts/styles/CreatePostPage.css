@@ -86,14 +86,6 @@
   padding: 0.95rem 1rem;
 }
 
-.create-post-page__intro {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.55rem;
-}
-
 .create-post-page__eyebrow {
   margin-bottom: 0.4rem;
   color: var(--create-post-accent-deep);
@@ -131,20 +123,6 @@
   backdrop-filter: blur(18px);
   box-shadow: var(--create-post-shadow);
   overflow: hidden;
-}
-
-.create-post-card--media {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-
-.create-post-card__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.65rem;
 }
 
 .create-post-card__eyebrow {
@@ -280,10 +258,6 @@
   background: rgba(255, 255, 255, 0.56);
 }
 
-.create-post-camera-actions {
-  margin-top: 0.4rem;
-}
-
 .create-post-camera-button {
   padding: 0.38rem 0.72rem;
   border-radius: 999px;
@@ -307,10 +281,6 @@
 .create-post-camera-button--ghost:hover,
 .create-post-camera-button--ghost:focus {
   color: var(--create-post-ink);
-}
-
-.create-post-camera-canvas {
-  display: none;
 }
 
 .create-post-card__meta-label {
@@ -351,10 +321,6 @@
   margin-top: 0.6rem;
 }
 
-.create-post-form__section--tight {
-  height: 100%;
-}
-
 .create-post-form__label {
   display: block;
   margin-bottom: 0.35rem;
@@ -369,11 +335,6 @@
   color: var(--create-post-accent-deep);
   font-size: 0.78rem;
   font-weight: 700;
-}
-
-.create-post-search {
-  display: flex;
-  gap: 0.75rem;
 }
 
 .create-post-search__input,
@@ -511,17 +472,9 @@
 }
 
 .create-post-form__footer-note {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
   margin-top: 0.4rem;
   color: var(--create-post-muted);
   font-size: 0.8rem;
-}
-
-.create-post-form__actions {
-  margin-top: 0.75rem;
 }
 
 .create-post-form__submit-helper {
@@ -544,11 +497,6 @@
   .create-post-uploader {
     height: 240px;
     max-height: none;
-  }
-
-  .create-post-page__intro {
-    align-items: flex-start;
-    flex-direction: column;
   }
 
   .create-post-page__headline,
@@ -588,24 +536,15 @@
     max-height: none;
   }
 
-  .create-post-search {
-    flex-direction: column;
-  }
-
   .selected-beer-card,
   .create-post-card__meta-strip,
-  .create-post-form__footer-note,
-  .create-post-form__actions {
+  .create-post-form__footer-note {
     flex-direction: column;
     align-items: stretch;
   }
 
   .create-post-form__submit-helper {
     text-align: left;
-  }
-
-  .create-post-camera-actions {
-    justify-content: stretch;
   }
 
   .rating-picker {

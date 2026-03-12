@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/WelcomePage.css';
-import { getAuthRedirectPath, logout, persistAuthSession, signIn, signInWithGoogle } from '../services/authApi';
-import { getGoogleIdToken } from '../services/googleAuth';
-import GoogleLogo from '../assets/google-logo.svg';
+import { getAuthRedirectPath, logout, persistAuthSession, signIn, signInWithGoogle } from '../../auth/api/authApi';
+import { getGoogleIdToken } from '../../auth/api/googleAuth';
+import GoogleLogo from '../../../shared/assets/google-logo.svg';
 
 type SignInFormData = {
   username: string;

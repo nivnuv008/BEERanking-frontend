@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+import { API_BASE_URL, parseJsonResponse, postJson } from '../../../shared/api/apiClient';
+
 const AUTH_REDIRECT_PATH = import.meta.env.VITE_AUTH_REDIRECT_PATH || '/profile';
 const SIGN_IN_PATH = '/';
 
@@ -23,53 +24,26 @@ type SignInPayload = {
   password: string;
 };
 
-type ErrorResponse = {
-  error?: string;
-  message?: string;
-};
-
 type RefreshResponse = {
   token?: string;
   refreshToken?: string;
   message?: string;
 };
 
-async function postJson<T>(path: string, body: Record<string, unknown>): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-
-  let data: unknown = null;
-  try {
-    data = await response.json();
-  } catch {
-    data = null;
-  }
-
-  if (!response.ok) {
-    const errorData = data as ErrorResponse | null;
-    throw new Error(errorData?.error || errorData?.message || 'Authentication request failed');
-  }
-
-  return data as T;
-}
-
 export function signUp(payload: SignUpPayload): Promise<AuthResponse> {
-  return postJson<AuthResponse>('/auth/signup', payload);
+  return postJson<AuthResponse>('/auth/signup', payload, 'Authentication request failed');
 }
 
 export function signIn(payload: SignInPayload): Promise<AuthResponse> {
-  return postJson<AuthResponse>('/auth/signin', payload);
+  return postJson<AuthResponse>('/auth/signin', payload, 'Authentication request failed');
 }
 
 export function signUpWithGoogle(googleToken: string): Promise<AuthResponse> {
-  return postJson<AuthResponse>('/auth/signup/google', { googleToken });
+  return postJson<AuthResponse>('/auth/signup/google', { googleToken }, 'Authentication request failed');
 }
 
 export function signInWithGoogle(googleToken: string): Promise<AuthResponse> {
-  return postJson<AuthResponse>('/auth/signin/google', { googleToken });
+  return postJson<AuthResponse>('/auth/signin/google', { googleToken }, 'Authentication request failed');
 }
 
 export function persistAuthSession(authResponse: AuthResponse | null | undefined): void {
@@ -153,30 +127,21 @@ export async function refreshAuthToken(): Promise<string> {
         body: JSON.stringify({ refreshToken: storedRefreshToken })
       });
 
-      let data: unknown = null;
-
       try {
-        data = await response.json();
-      } catch {
-        data = null;
-      }
+        const payload = await parseJsonResponse<RefreshResponse>(response, 'You need to sign in again');
+        const token = payload?.token;
+        const refreshToken = payload?.refreshToken;
 
-      const payload = data as RefreshResponse | ErrorResponse | null;
+        if (!token || !refreshToken) {
+          return handleInvalidAuthSession('Authentication refresh failed');
+        }
 
-      if (!response.ok) {
-        const message = payload?.error || payload?.message || 'You need to sign in again';
+        setStoredTokens(token, refreshToken);
+        return token;
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'You need to sign in again';
         return handleInvalidAuthSession(message);
       }
-
-      const token = payload?.token;
-      const refreshToken = payload?.refreshToken;
-
-      if (!token || !refreshToken) {
-        return handleInvalidAuthSession('Authentication refresh failed');
-      }
-
-      setStoredTokens(token, refreshToken);
-      return token;
     })().finally(() => {
       refreshRequest = null;
     });

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
 import '../styles/ProfilePage.css';
-import { getStoredUser, logout } from '../services/authApi';
+import { getStoredUser, logout } from '../../auth/api/authApi';
 import {
   getCurrentUserProfile,
   getProfileImageUrl,
@@ -10,7 +11,7 @@ import {
   updateCurrentUserProfile,
   type Beer,
   type UserProfile
-} from '../services/profileApi';
+} from '../api/profileApi';
 
 type EditableProfile = {
   username: string;
@@ -22,9 +23,7 @@ type EditableProfile = {
 function ProfilePage() {
   const navigate = useNavigate();
   const searchTimeoutRef = useRef<number | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const cameraStreamRef = useRef<MediaStream | null>(null);
+  const cameraCaptureRef = useRef<CameraCaptureHandle | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(() => getStoredUser<UserProfile>());
   const [draft, setDraft] = useState<EditableProfile>({
     username: '',
@@ -38,25 +37,8 @@ function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [isCameraReady, setIsCameraReady] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-
-  const stopCameraStream = () => {
-    if (!cameraStreamRef.current) {
-      return;
-    }
-
-    cameraStreamRef.current.getTracks().forEach((track) => track.stop());
-    cameraStreamRef.current = null;
-
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-
-    setIsCameraReady(false);
-  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -82,12 +64,6 @@ function ProfilePage() {
 
     void loadProfile();
   }, [navigate]);
-
-  useEffect(() => {
-    return () => {
-      stopCameraStream();
-    };
-  }, []);
 
   useEffect(() => {
     if (!profile) {
@@ -136,48 +112,12 @@ function ProfilePage() {
     };
   }, [beerQuery, isEditing]);
 
-  useEffect(() => {
-    if (!isCameraOpen || !videoRef.current || !cameraStreamRef.current) {
-      return;
-    }
-
-    const videoElement = videoRef.current;
-    const stream = cameraStreamRef.current;
-
-    const markReady = () => {
-      if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
-        setIsCameraReady(true);
-        void videoElement.play();
-      }
-    };
-
-    setIsCameraReady(false);
-    videoElement.srcObject = stream;
-
-    videoElement.addEventListener('loadedmetadata', markReady);
-    videoElement.addEventListener('canplay', markReady);
-    void videoElement.play().catch(() => {
-      // The user already granted camera access; if autoplay is delayed,
-      // readiness will still be updated by the media events above.
-    });
-
-    const readyCheckTimeout = window.setTimeout(markReady, 300);
-
-    return () => {
-      window.clearTimeout(readyCheckTimeout);
-      videoElement.removeEventListener('loadedmetadata', markReady);
-      videoElement.removeEventListener('canplay', markReady);
-    };
-  }, [isCameraOpen]);
-
   const handleEditToggle = () => {
     if (!profile) {
       return;
     }
 
-    stopCameraStream();
-    setIsCameraOpen(false);
-    setIsCameraReady(false);
+    cameraCaptureRef.current?.closeCamera();
 
     setSuccessMessage('');
     setError('');
@@ -195,95 +135,6 @@ function ProfilePage() {
   const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setDraft((current) => ({ ...current, username: value }));
-  };
-
-  const handleStartCamera = async () => {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setError('Camera access is not supported in this browser');
-      return;
-    }
-
-    try {
-      setError('');
-      stopCameraStream();
-      setIsCameraReady(false);
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user'
-        },
-        audio: false
-      });
-
-      cameraStreamRef.current = stream;
-      setIsCameraOpen(true);
-    } catch (cameraError: unknown) {
-      const message = cameraError instanceof Error ? cameraError.message : 'Unable to open camera';
-      setError(message);
-      setIsCameraOpen(false);
-      setIsCameraReady(false);
-    }
-  };
-
-  const handleCapturePhoto = async () => {
-    if (!videoRef.current || !canvasRef.current) {
-      return;
-    }
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const width = video.videoWidth;
-    const height = video.videoHeight;
-
-    if (!width || !height) {
-      setError('Camera is not ready yet');
-      return;
-    }
-
-    canvas.width = width;
-    canvas.height = height;
-
-    const context = canvas.getContext('2d');
-
-    if (!context) {
-      setError('Unable to capture image from camera');
-      return;
-    }
-
-    context.drawImage(video, 0, 0, width, height);
-
-    const file = await new Promise<File | null>((resolve) => {
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          resolve(null);
-          return;
-        }
-
-        resolve(new File([blob], 'camera-profile-photo.jpg', { type: 'image/jpeg' }));
-      }, 'image/jpeg', 0.92);
-    });
-
-    if (!file) {
-      setError('Unable to capture image from camera');
-      return;
-    }
-
-    const previewUrl = URL.createObjectURL(file);
-    setDraft((current) => ({
-      ...current,
-      profilePhotoFile: file,
-      previewUrl
-    }));
-
-    stopCameraStream();
-    setIsCameraOpen(false);
-    setIsCameraReady(false);
-  };
-
-  const handleCloseCamera = () => {
-    stopCameraStream();
-    setIsCameraOpen(false);
-    setIsCameraReady(false);
   };
 
   const addFavoriteBeer = (beer: Beer) => {
@@ -329,8 +180,7 @@ function ProfilePage() {
         profilePhotoFile: draft.profilePhotoFile
       });
 
-      stopCameraStream();
-      setIsCameraOpen(false);
+      cameraCaptureRef.current?.closeCamera();
       setProfile(updatedProfile);
       setIsEditing(false);
       setBeerQuery('');
@@ -370,14 +220,14 @@ function ProfilePage() {
   return (
     <div className="profile-page">
       <div className="profile-page__backdrop" />
-      <div className="profile-page__content container-fluid profile-page__content-shell">
-        <div className="profile-page__topbar">
-          <div className="profile-page__intro-copy">
+      <div className="profile-page__content d-flex flex-column container-fluid profile-page__content-shell">
+        <div className="d-flex flex-column flex-lg-row align-items-start justify-content-between gap-3 mb-3">
+          <div className="flex-fill">
             <p className="profile-page__eyebrow">BEERanking profile</p>
             <h1 className="profile-page__headline">Your profile, your favorite pours, your beer story.</h1>
           </div>
 
-          <div className="profile-page__actions">
+          <div className="d-flex flex-wrap align-self-start justify-content-start justify-content-lg-end gap-3">
             <button type="button" className="btn profile-page__ghost-button" onClick={handleLogout}>
               Log out
             </button>
@@ -392,41 +242,64 @@ function ProfilePage() {
 
         <div className="row g-2 align-items-stretch">
           <div className="col-lg-4">
-            <section className="profile-card profile-card--identity h-100">
-              <div className="profile-card__photo-shell">
-                {isEditing && isCameraOpen ? (
-                  <video ref={videoRef} className="profile-card__photo profile-card__camera-preview" autoPlay muted playsInline />
-                ) : visibleProfileImage ? (
-                  <img className="profile-card__photo" src={visibleProfileImage} alt={profile.username} />
-                ) : (
-                  <div className="profile-card__photo profile-card__photo--fallback">
-                    {profile.username.slice(0, 1).toUpperCase()}
-                  </div>
+            <section className="profile-card d-flex flex-column align-items-center text-center h-100">
+              <CameraCapture
+                ref={cameraCaptureRef}
+                facingMode="user"
+                fileName="camera-profile-photo.jpg"
+                previewClassName="profile-card__photo profile-card__camera-preview"
+                onCapture={(file) => {
+                  const previewUrl = URL.createObjectURL(file);
+                  setDraft((current) => ({
+                    ...current,
+                    profilePhotoFile: file,
+                    previewUrl,
+                  }));
+                }}
+                onError={setError}
+              >
+                {({ isOpen, isReady, preview, openCamera, capturePhoto, closeCamera }) => (
+                  <>
+                    <div className="w-100 d-flex justify-content-center mb-2">
+                      {isOpen ? preview : visibleProfileImage ? (
+                        <img className="profile-card__photo" src={visibleProfileImage} alt={profile.username} />
+                      ) : (
+                        <div className="profile-card__photo profile-card__photo--fallback">
+                          {profile.username.slice(0, 1).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+
+                    {isEditing ? (
+                      <div className="d-flex flex-column align-items-center gap-2 mb-2">
+                        <div className="d-flex flex-wrap justify-content-center gap-2">
+                          {!isOpen ? (
+                            <button
+                              type="button"
+                              className="btn profile-card__camera-button"
+                              onClick={() => {
+                                setError('');
+                                openCamera();
+                              }}
+                            >
+                              Use camera
+                            </button>
+                          ) : (
+                            <>
+                              <button type="button" className="btn profile-card__camera-button" onClick={capturePhoto} disabled={!isReady}>
+                                {isReady ? 'Take photo' : 'Preparing camera...'}
+                              </button>
+                              <button type="button" className="btn profile-card__camera-button profile-card__camera-button--ghost" onClick={closeCamera}>
+                                Close camera
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ) : null}
+                  </>
                 )}
-              </div>
-
-              {isEditing ? (
-                <div className="profile-card__photo-tools">
-                  <div className="profile-card__camera-actions">
-                    {!isCameraOpen ? (
-                      <button type="button" className="btn profile-card__camera-button" onClick={handleStartCamera}>
-                        Use camera
-                      </button>
-                    ) : (
-                      <>
-                        <button type="button" className="btn profile-card__camera-button" onClick={handleCapturePhoto} disabled={!isCameraReady}>
-                          {isCameraReady ? 'Take photo' : 'Preparing camera...'}
-                        </button>
-                        <button type="button" className="btn profile-card__camera-button profile-card__camera-button--ghost" onClick={handleCloseCamera}>
-                          Close camera
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ) : null}
-
-              <canvas ref={canvasRef} className="profile-card__capture-canvas" />
+              </CameraCapture>
 
               <div className="profile-card__identity-copy">
                 <p className="profile-card__label">Username</p>
@@ -459,7 +332,7 @@ function ProfilePage() {
 
           <div className="col-lg-8">
             <section className="profile-card h-100">
-              <div className="profile-card__section-header">
+              <div className="d-flex align-items-center justify-content-between gap-3 mb-2">
                 <div>
                   <p className="profile-card__label">Favorite beers</p>
                   <h2 className="profile-card__section-title">Your current lineup</h2>
@@ -468,7 +341,7 @@ function ProfilePage() {
               </div>
 
               {isEditing ? (
-                <div className="profile-card__editor-tools">
+                <div className="mb-2">
                   <input
                     type="text"
                     value={beerQuery}

@@ -271,12 +271,6 @@
   font-weight: 700;
 }
 
-.profile-page--loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .profile-page__status-card {
   padding: 1.25rem 1.5rem;
   border-radius: 22px;

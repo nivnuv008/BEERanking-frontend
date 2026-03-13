@@ -203,7 +203,7 @@ function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="profile-page profile-page--loading">
+      <div className="profile-page d-flex align-items-center justify-content-center">
         <div className="profile-page__status-card">Loading profile...</div>
       </div>
     );
@@ -211,7 +211,7 @@ function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="profile-page profile-page--loading">
+      <div className="profile-page d-flex align-items-center justify-content-center">
         <div className="profile-page__status-card">Profile data is not available.</div>
       </div>
     );

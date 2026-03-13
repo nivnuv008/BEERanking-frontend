@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/WelcomePage.css';
-import { getAuthRedirectPath, logout, persistAuthSession, signIn, signInWithGoogle } from '../services/authApi';
-import { getGoogleIdToken } from '../services/googleAuth';
-import GoogleLogo from '../assets/google-logo.svg';
+import { getAuthRedirectPath, logout, persistAuthSession, signIn, signInWithGoogle } from '../../auth/api/authApi';
+import { getGoogleIdToken } from '../../auth/api/googleAuth';
+import GoogleLogo from '../../../shared/assets/google-logo.svg';
 
 type SignInFormData = {
   username: string;
@@ -58,7 +58,6 @@ function WelcomePage() {
       });
 
       persistAuthSession(response);
-      alert('Signed in successfully!');
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (submitError: unknown) {
       const message = submitError instanceof Error ? submitError.message : 'Sign in failed';
@@ -77,7 +76,6 @@ function WelcomePage() {
       const response = await signInWithGoogle(googleToken);
 
       persistAuthSession(response);
-      alert('Signed in with Google successfully!');
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (googleError: unknown) {
       const message = googleError instanceof Error ? googleError.message : 'Google sign in failed';

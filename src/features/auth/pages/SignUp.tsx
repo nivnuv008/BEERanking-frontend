@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import '../styles/SignUp.css';
-import { getAuthRedirectPath, logout, persistAuthSession, signUp, signUpWithGoogle } from '../services/authApi';
-import { getGoogleIdToken } from '../services/googleAuth';
-import GoogleLogo from '../assets/google-logo.svg';
+import { getAuthRedirectPath, persistAuthSession, signUp, signUpWithGoogle } from '../api/authApi';
+import { getGoogleIdToken } from '../api/googleAuth';
+import GoogleLogo from '../../../shared/assets/google-logo.svg';
 
 type SignUpFormData = {
   username: string;
@@ -80,7 +79,6 @@ function SignUp() {
       });
 
       persistAuthSession(response);
-      alert('Account created successfully!');
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (submitError: unknown) {
       const message = submitError instanceof Error ? submitError.message : 'Sign up failed';
@@ -99,7 +97,6 @@ function SignUp() {
       const response = await signUpWithGoogle(googleToken);
 
       persistAuthSession(response);
-      alert('Account created with Google successfully!');
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (googleError: unknown) {
       const message = googleError instanceof Error ? googleError.message : 'Google sign up failed';
@@ -107,11 +104,6 @@ function SignUp() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleClearSession = () => {
-    logout();
-    window.location.reload();
   };
 
   return (

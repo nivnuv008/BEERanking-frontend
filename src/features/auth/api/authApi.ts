@@ -7,6 +7,12 @@ let refreshRequest: Promise<string> | null = null;
 
 type AuthUser = Record<string, unknown>;
 
+export type StoredUser = {
+  _id?: string;
+  username?: string;
+  profilePic?: string | null;
+};
+
 type AuthResponse = {
   token?: string;
   refreshToken?: string;

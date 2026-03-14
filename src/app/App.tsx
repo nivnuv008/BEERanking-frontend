@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import SignUp from '../features/auth/pages/SignUp'
+import FeedCommentsPage from '../features/feed/pages/FeedCommentsPage'
 import FeedPage from '../features/feed/pages/FeedPage'
 import AppLayout from '../features/layout/pages/AppLayout'
 import CreatePostPage from '../features/posts/pages/CreatePostPage'
@@ -15,6 +16,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route element={<AppLayout />}>
           <Route path="/feed" element={<FeedPage />} />
+          <Route path="/feed/:postId/comments" element={<FeedCommentsPage />} />
           <Route path="/my-posts" element={<MyPostsPage />} />
           <Route path="/create-post" element={<CreatePostPage />} />
           <Route path="/profile" element={<ProfilePage />} />

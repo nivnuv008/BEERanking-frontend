@@ -48,8 +48,7 @@ function FeedCommentsPage() {
 
   useEffect(() => {
     if (!postId) {
-      setError('Post id is missing');
-      setIsLoading(false);
+      navigate('/feed', { replace: true });
       return;
     }
 
@@ -60,6 +59,11 @@ function FeedCommentsPage() {
           post ?? getFeedPostById(postId),
           getPostComments(postId),
         ]);
+
+        if (!resolvedPost) {
+          navigate('/feed', { replace: true });
+          return;
+        }
 
         setPost(resolvedPost);
         syncPosts(resolvedPost ? [resolvedPost] : [], true);
@@ -74,7 +78,7 @@ function FeedCommentsPage() {
     };
 
     void loadScreen();
-  }, [post, postId]);
+  }, [navigate, post, postId, syncPosts]);
 
   if (isLoading) {
     return (

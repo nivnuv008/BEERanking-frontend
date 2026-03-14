@@ -1,5 +1,5 @@
 import { API_BASE_URL, parseJsonResponse } from '../../../shared/api/apiClient';
-import { fetchWithAuth, getAuthToken, getStoredUser } from '../../auth/api/authApi';
+import { fetchWithAuth, getAuthToken, getStoredUser, type StoredUser } from '../../auth/api/authApi';
 
 const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
@@ -36,12 +36,6 @@ export type FeedComment = {
   text: string;
   createdAt: string;
   user: FeedUser;
-};
-
-type StoredUser = {
-  _id?: string;
-  username?: string;
-  profilePic?: string | null;
 };
 
 type BackendPagination = {

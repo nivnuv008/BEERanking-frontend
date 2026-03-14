@@ -1,14 +1,10 @@
 import { useMemo, useState } from 'react';
-import { getStoredUser } from '../../auth/api/authApi';
+import { getStoredUser, type StoredUser } from '../../auth/api/authApi';
 import { togglePostLike, type FeedPost } from '../api/feedApi';
 
 // TODO: Remove this localStorage fallback after the backend returns likedByCurrentUser
 // or a reliable likes payload on feed/post reads.
 const FEED_LIKES_STORAGE_KEY = 'beeranking.feed.likes';
-
-type StoredUser = {
-  _id?: string;
-};
 
 export type LikeState = {
   liked: boolean;

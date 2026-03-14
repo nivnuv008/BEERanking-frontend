@@ -74,7 +74,7 @@ function FeedPage() {
   useEffect(() => {
     const sentinel = sentinelRef.current;
 
-    if (!sentinel || !hasMore || isInitialLoading || isLoadingMore) {
+    if (!sentinel || !hasMore || isInitialLoading || isLoadingMore || error) {
       return;
     }
 
@@ -90,9 +90,9 @@ function FeedPage() {
       },
       {
         root,
-        rootMargin: '0px 0px 280px 0px',
+        rootMargin: '0px 0px 260px 0px',
         threshold: 0,
-      }
+      },
     );
 
     observer.observe(sentinel);
@@ -100,7 +100,7 @@ function FeedPage() {
     return () => {
       observer.disconnect();
     };
-  }, [hasMore, isInitialLoading, isLoadingMore, nextSkip]);
+  }, [error, hasMore, isInitialLoading, isLoadingMore, nextSkip]);
 
   const handleRetry = () => {
     void loadPosts(true);
@@ -126,7 +126,6 @@ function FeedPage() {
             <p className="feed-page__eyebrow">Community feed</p>
             <h1 className="feed-page__headline">Every pour in one scroll.</h1>
           </div>
-          <p className="feed-page__lead mb-0">Pictures, scores, and tasting notes from the full feed. Comments open on a separate screen so the main scroll stays fast.</p>
         </div>
 
         <div className="d-flex flex-wrap gap-2 mb-3">
@@ -161,7 +160,13 @@ function FeedPage() {
                 likeCount={currentLikeState.likeCount}
                 likeDisabled={likeBusyId === post._id}
                 onToggleLike={toggleLike}
-                onOpenComments={(selectedPost) => navigate(`/feed/${selectedPost._id}/comments`, { state: { post: selectedPost } })}
+                onOpenComments={(selectedPost) => navigate(`/posts/${selectedPost._id}/comments`, {
+                  state: {
+                    post: selectedPost,
+                    returnTo: '/feed',
+                    returnLabel: 'Back to feed',
+                  },
+                })}
               />
             );
           })}
@@ -171,11 +176,6 @@ function FeedPage() {
 
         <div className="d-flex justify-content-center pt-1">
           {isLoadingMore ? <div className="feed-surface-card text-center mt-3">Loading more posts...</div> : null}
-          {!isLoadingMore && hasMore ? (
-            <button type="button" className="btn feed-button-secondary mt-3" onClick={() => void loadPosts(false)}>
-              Load more posts
-            </button>
-          ) : null}
         </div>
 
         <div ref={sentinelRef} className="feed-page__sentinel" aria-hidden="true" />

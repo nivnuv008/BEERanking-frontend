@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
+import PostRatingField from '../components/PostRatingField';
 import '../styles/CreatePostPage.css';
 import { getAuthToken } from '../../auth/api/authApi';
 import { searchBeers, type Beer } from '../../profile/api/profileApi';
@@ -275,7 +276,6 @@ function CreatePostPage() {
             <p className="create-post-page__eyebrow">Share a pour</p>
             <h1 className="create-post-page__headline">Post the beer.</h1>
           </div>
-          <p className="create-post-page__lead">Photo, beer, rating, note. Keep it sharp.</p>
         </div>
 
         <div className="row g-3 create-post-page__grid">
@@ -326,7 +326,7 @@ function CreatePostPage() {
                       {!isOpen ? (
                         <button
                           type="button"
-                          className="btn create-post-camera-button"
+                          className="btn btn-warning btn-sm rounded-pill px-3 fw-semibold text-white shadow-sm"
                           onClick={() => {
                             setError('');
                             setSuccessMessage('');
@@ -339,10 +339,10 @@ function CreatePostPage() {
                         </button>
                       ) : (
                         <>
-                          <button type="button" className="btn create-post-camera-button" onClick={capturePhoto} disabled={!isReady}>
+                          <button type="button" className="btn btn-warning btn-sm rounded-pill px-3 fw-semibold text-white shadow-sm" onClick={capturePhoto} disabled={!isReady}>
                             {isReady ? 'Take photo' : 'Preparing camera...'}
                           </button>
-                          <button type="button" className="btn create-post-camera-button create-post-camera-button--ghost" onClick={closeCamera}>
+                          <button type="button" className="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold" onClick={closeCamera}>
                             Close camera
                           </button>
                         </>
@@ -359,7 +359,7 @@ function CreatePostPage() {
                 </div>
                 <button
                   type="button"
-                  className="btn create-post-card__ghost-button"
+                  className="btn btn-outline-secondary rounded-pill px-4 fw-semibold"
                   onClick={() => {
                     cameraCaptureRef.current?.closeCamera();
                     setImageFile(null);
@@ -408,7 +408,7 @@ function CreatePostPage() {
                         autoComplete="off"
                       />
                       {selectedBeer ? (
-                        <button type="button" className="btn create-post-search__clear" onClick={handleClearBeer}>
+                        <button type="button" className="btn btn-outline-secondary rounded-4 px-3" onClick={handleClearBeer}>
                           Clear
                         </button>
                       ) : null}
@@ -459,22 +459,16 @@ function CreatePostPage() {
 
                 <div className="col-lg-5">
                   <div className="create-post-form__section h-100">
-                    <label className="create-post-form__label">Rating</label>
-                    <div className="rating-picker" role="radiogroup" aria-label="Beer rating">
-                      {[1, 2, 3, 4, 5].map((value) => (
-                        <button
-                          key={value}
-                          type="button"
-                          className={`rating-picker__button${rating === value ? ' rating-picker__button--active' : ''}`}
-                          onClick={() => setRating(value)}
-                          aria-checked={rating === value}
-                          role="radio"
-                        >
-                          <span className="rating-picker__number">{value}</span>
-                          <span className="rating-picker__caption">{value === 5 ? 'Top' : value === 4 ? 'Great' : value === 3 ? 'Good' : value === 2 ? 'Weak' : 'Skip'}</span>
-                        </button>
-                      ))}
-                    </div>
+                    <PostRatingField
+                      label="Rating"
+                      inputId="create-post-rating"
+                      value={rating}
+                      onChange={(nextRating) => {
+                        setRating(nextRating);
+                        setSuccessMessage('');
+                      }}
+                      disabled={isSubmitting}
+                    />
                   </div>
                 </div>
               </div>
@@ -486,7 +480,7 @@ function CreatePostPage() {
                 <textarea
                   id="post-description"
                   className="form-control create-post-form__textarea"
-                  rows={4}
+                  rows={3}
                   maxLength={DESCRIPTION_LIMIT}
                   placeholder="Aroma, body, finish, setting, or why you would order it again."
                   value={description}
@@ -502,10 +496,10 @@ function CreatePostPage() {
               </div>
 
               <div className="d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-end gap-3 mt-3">
-                <button type="button" className="btn create-post-card__ghost-button" onClick={handleResetForm} disabled={isSubmitting}>
+                <button type="button" className="btn btn-outline-secondary rounded-pill px-4 fw-semibold" onClick={handleResetForm} disabled={isSubmitting}>
                   Reset
                 </button>
-                <button type="button" className="btn create-post-card__primary-button" onClick={handleSubmit} disabled={isSubmitting || !!submitValidationMessage}>
+                <button type="button" className="btn btn-warning rounded-pill px-4 fw-semibold text-white shadow-sm" onClick={handleSubmit} disabled={isSubmitting || !!submitValidationMessage}>
                   {isSubmitting ? 'Publishing...' : 'Publish post'}
                 </button>
               </div>

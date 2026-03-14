@@ -9,6 +9,8 @@ import '../styles/FeedPage.css';
 
 type FeedCommentsLocationState = {
   post?: FeedPost;
+  returnTo?: string;
+  returnLabel?: string;
 };
 
 function formatDateTime(value: string): string {
@@ -32,7 +34,10 @@ function FeedCommentsPage() {
   const { postId } = useParams();
   const location = useLocation();
   const locationState = location.state as FeedCommentsLocationState | null;
-  const [post, setPost] = useState<FeedPost | null>(locationState?.post ?? null);
+  const locationPost = locationState?.post ?? null;
+  const returnTo = locationState?.returnTo ?? '/feed';
+  const returnLabel = locationState?.returnLabel ?? 'Back to feed';
+  const [post, setPost] = useState<FeedPost | null>(locationPost);
   const [comments, setComments] = useState<FeedComment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [commentText, setCommentText] = useState('');
@@ -56,7 +61,7 @@ function FeedCommentsPage() {
       try {
         setIsLoading(true);
         const [resolvedPost, resolvedComments] = await Promise.all([
-          post ?? getFeedPostById(postId),
+          locationPost ?? getFeedPostById(postId),
           getPostComments(postId),
         ]);
 
@@ -78,7 +83,8 @@ function FeedCommentsPage() {
     };
 
     void loadScreen();
-  }, [navigate, post, postId, syncPosts]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate, postId]);
 
   if (isLoading) {
     return (
@@ -123,8 +129,8 @@ function FeedCommentsPage() {
             <p className="feed-comments-page__subhead mb-0">Comments stay on a dedicated screen so the feed remains a clean scroll.</p>
           </div>
 
-          <button type="button" className="btn feed-button-secondary" onClick={() => navigate('/feed')}>
-            Back to feed
+          <button type="button" className="btn feed-button-secondary" onClick={() => navigate(returnTo)}>
+            {returnLabel}
           </button>
         </div>
 
@@ -136,9 +142,7 @@ function FeedCommentsPage() {
             liked={likeStateById[post._id]?.liked ?? false}
             likeCount={likeStateById[post._id]?.likeCount ?? post.likeCount}
             likeDisabled={likeBusyId === post._id}
-            commentDisabled={true}
             onToggleLike={toggleLike}
-            onOpenComments={() => {}}
           />
         ) : null}
 

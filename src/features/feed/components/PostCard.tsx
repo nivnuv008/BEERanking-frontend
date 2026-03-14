@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { getProfileImageUrl } from '../../profile/api/profileApi';
 import type { FeedPost } from '../api/feedApi';
 
@@ -9,6 +10,7 @@ type PostCardProps = {
   commentDisabled?: boolean;
   onToggleLike?: (post: FeedPost) => void;
   onOpenComments?: (post: FeedPost) => void;
+  footerActions?: ReactNode;
 };
 
 function formatDateTime(value: string): string {
@@ -43,7 +45,7 @@ function CommentIcon() {
   );
 }
 
-function PostCard({ post, liked, likeCount, likeDisabled = false, commentDisabled = false, onToggleLike, onOpenComments }: PostCardProps) {
+function PostCard({ post, liked, likeCount, likeDisabled = false, commentDisabled = false, onToggleLike, onOpenComments, footerActions }: PostCardProps) {
   const avatarUrl = getProfileImageUrl(post.user.profilePic);
 
   return (
@@ -102,7 +104,7 @@ function PostCard({ post, liked, likeCount, likeDisabled = false, commentDisable
               <p className="feed-card__description">{post.description}</p>
             </section>
 
-            {(onToggleLike || onOpenComments) ? (
+            {(onToggleLike || onOpenComments || footerActions) ? (
               <div className="feed-card__footer d-flex flex-wrap align-items-center justify-content-between gap-3 mt-auto pt-3">
                 <div className="d-flex flex-wrap gap-3">
                   {onToggleLike ? (
@@ -124,6 +126,8 @@ function PostCard({ post, liked, likeCount, likeDisabled = false, commentDisable
                       <span>Comments · {post.commentCount}</span>
                     </button>
                   ) : null}
+
+                  {footerActions}
                 </div>
               </div>
             ) : null}

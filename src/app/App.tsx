@@ -16,7 +16,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route element={<AppLayout />}>
           <Route path="/feed" element={<FeedPage />} />
-          <Route path="/feed/:postId/comments" element={<FeedCommentsPage />} />
+          <Route path="/posts/:postId/comments" element={<FeedCommentsPage />} />
           <Route path="/my-posts" element={<MyPostsPage />} />
           <Route path="/create-post" element={<CreatePostPage />} />
           <Route path="/profile" element={<ProfilePage />} />

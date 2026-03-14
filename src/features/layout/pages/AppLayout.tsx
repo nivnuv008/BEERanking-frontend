@@ -1,9 +1,23 @@
 import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import '../styles/AppLayout.css';
+
+type CommentsLocationState = {
+  returnTo?: string;
+};
 
 function AppLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+  const locationState = location.state as CommentsLocationState | null;
+
+  const resolveLinkClassName = (targetPath: string) => {
+    const isDirectMatch = location.pathname === targetPath || location.pathname.startsWith(`${targetPath}/`);
+    const isCommentsMatch = location.pathname.startsWith('/posts/') && location.pathname.endsWith('/comments') && (locationState?.returnTo ?? '/feed') === targetPath;
+    const isActive = isDirectMatch || isCommentsMatch;
+
+    return `app-navbar__link${isActive ? ' app-navbar__link--active' : ''}`;
+  };
 
   const handleNavigate = () => {
     setIsMenuOpen(false);
@@ -31,16 +45,16 @@ function AppLayout() {
 
             <div className={`navbar-collapse app-navbar__collapse${isMenuOpen ? ' app-navbar__collapse--open' : ''}`} id="beeranking-navbar">
               <div className="navbar-nav gap-2 mx-lg-auto my-3 my-lg-0 align-items-stretch align-items-lg-center">
-                <NavLink to="/feed" onClick={handleNavigate} className={({ isActive }) => `app-navbar__link${isActive ? ' app-navbar__link--active' : ''}`}>
+                <NavLink to="/feed" onClick={handleNavigate} className={() => resolveLinkClassName('/feed')}>
                   Feed
                 </NavLink>
-                <NavLink to="/my-posts" onClick={handleNavigate} className={({ isActive }) => `app-navbar__link${isActive ? ' app-navbar__link--active' : ''}`}>
+                <NavLink to="/my-posts" onClick={handleNavigate} className={() => resolveLinkClassName('/my-posts')}>
                   My posts
                 </NavLink>
-                <NavLink to="/create-post" onClick={handleNavigate} className={({ isActive }) => `app-navbar__link${isActive ? ' app-navbar__link--active' : ''}`}>
+                <NavLink to="/create-post" onClick={handleNavigate} className={() => resolveLinkClassName('/create-post')}>
                   Create post
                 </NavLink>
-                <NavLink to="/profile" onClick={handleNavigate} className={({ isActive }) => `app-navbar__link${isActive ? ' app-navbar__link--active' : ''}`}>
+                <NavLink to="/profile" onClick={handleNavigate} className={() => resolveLinkClassName('/profile')}>
                   Profile
                 </NavLink>
               </div>

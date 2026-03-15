@@ -109,7 +109,7 @@ function SignUp() {
   };
 
   return (
-    <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center app-auth-page px-3 py-4 position-relative">
+    <div className="container-fluid d-flex justify-content-center app-auth-page app-auth-page--signup px-3 py-4 position-relative">
       {error ? (
         <FeedbackToast
           show
@@ -120,17 +120,17 @@ function SignUp() {
         />
       ) : null}
 
-      <Card className="shadow-lg border-0" style={{ maxWidth: '500px', width: '100%' }}>
-        <Card.Body className="p-4">
+      <Card className="shadow-lg border-0 app-auth-card">
+        <Card.Body className="px-4 pb-4 pt-3">
           <Button
             variant="link"
-            className="text-decoration-none p-0 mb-3"
+            className="text-decoration-none p-0 mb-2"
             onClick={() => navigate('/')}
           >
             ← Back
           </Button>
           
-          <div className="text-center mb-4">
+          <div className="text-center mb-3">
             <h1 className="h2 fw-bold">Join BEERanking</h1>
             <p className="text-muted">Start discovering and ranking amazing beers</p>
           </div>

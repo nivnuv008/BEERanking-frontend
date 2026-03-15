@@ -33,6 +33,26 @@ body {
 
 .app-auth-page {
   background: var(--app-page-background);
+  height: 100vh;
+  height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-auth-page--signup {
+  align-items: flex-start;
+}
+
+.app-auth-card {
+  width: 100%;
+  max-width: 500px;
+}
+
+@media (min-height: 840px) {
+  .app-auth-page--signup {
+    align-items: center;
+  }
 }
 
 button {

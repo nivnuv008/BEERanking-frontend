@@ -135,7 +135,6 @@ function FeedCommentsPage() {
         <div className="d-flex flex-column flex-lg-row align-items-start justify-content-between gap-3 mb-3">
           <div>
             <h1 className="feed-comments-page__headline">Conversation around the pour.</h1>
-            <p className="feed-comments-page__subhead mb-0">Comments stay on a dedicated screen so the feed remains a clean scroll.</p>
           </div>
 
           <Button type="button" variant="outline-secondary" className="rounded-pill px-4 fw-semibold" onClick={() => navigate(returnTo)}>

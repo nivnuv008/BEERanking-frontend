@@ -135,14 +135,6 @@ function FeedPage() {
         </div>
 
         <div className="d-flex flex-wrap gap-2 mb-3">
-          <Badge pill className="px-3 py-2 feed-pill">
-            Loaded
-            <strong className="ms-2">{posts.length}</strong>
-          </Badge>
-          <Badge pill className="px-3 py-2 feed-pill">
-            Total
-            <strong className="ms-2">{totalPosts}</strong>
-          </Badge>
         </div>
 
         {error ? (

@@ -31,7 +31,6 @@ function PostRatingField({ label, value, onChange, disabled = false, inputId }: 
           <Form.Label htmlFor={inputId} className="create-post-form__label rating-field__label">
             {label}
           </Form.Label>
-          <Form.Text className="rating-field__hint">Whole numbers or decimals from 1.0 to 5.0.</Form.Text>
         </div>
         <div className="rating-field__value">{safeValue.toFixed(1)}</div>
       </div>

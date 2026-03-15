@@ -355,7 +355,6 @@ function CreatePostPage() {
                   <p className="create-post-card__eyebrow">Details</p>
                   <h2 className="create-post-card__title">Write the post</h2>
                 </div>
-                <Badge pill className="create-post-card__badge create-post-card__badge--soft">1 image · 1 beer · 1 rating</Badge>
               </div>
               <div className="row g-3">
                 <div className="col-lg-7">
@@ -462,7 +461,6 @@ function CreatePostPage() {
                   }}
                 />
                 <div className="create-post-form__footer-note d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3">
-                  <span>Backend limit: {DESCRIPTION_LIMIT} characters.</span>
                   <strong>{descriptionLength}/{DESCRIPTION_LIMIT}</strong>
                 </div>
               </div>

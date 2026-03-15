@@ -10,6 +10,7 @@
 }
 
 .rating-field__hint {
+  display: block;
   margin: 0;
   color: var(--create-post-muted, #6e5a4a);
   font-size: 0.82rem;
@@ -36,18 +37,13 @@
 
 .rating-field__chip {
   padding: 0.55rem 0.4rem;
-  border: 1px solid rgba(123, 52, 30, 0.14);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--create-post-ink, #1f1a17);
+  border-radius: 14px !important;
   font-size: 0.85rem;
   font-weight: 800;
 }
 
 .rating-field__chip--active {
-  background: linear-gradient(135deg, #b85418 0%, #d76a20 100%);
-  border-color: transparent;
-  color: #fff;
+  color: #fff !important;
   box-shadow: 0 12px 24px rgba(184, 84, 24, 0.2);
 }
 

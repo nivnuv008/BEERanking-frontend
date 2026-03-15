@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
 import '../styles/AppLayout.css';
 
 type CommentsLocationState = {
@@ -26,25 +29,20 @@ function AppLayout() {
   return (
     <div className="app-shell">
       <header className="app-shell__header">
-        <nav className="navbar navbar-expand-lg app-navbar">
-          <div className="container-fluid d-flex align-items-center gap-3">
-            <NavLink to="/feed" className="app-navbar__brand">
+        <Navbar expand="lg" expanded={isMenuOpen} className="app-navbar">
+          <Container fluid className="gap-3">
+            <Navbar.Brand as={NavLink} to="/feed" className="app-navbar__brand">
               BEERanking
-            </NavLink>
+            </Navbar.Brand>
 
-            <button
-              className="navbar-toggler ms-auto app-navbar__toggler"
-              type="button"
+            <Navbar.Toggle
+              className="ms-auto app-navbar__toggler"
               aria-controls="beeranking-navbar"
-              aria-expanded={isMenuOpen}
-              aria-label="Toggle navigation"
               onClick={() => setIsMenuOpen((current) => !current)}
-            >
-              <span className="navbar-toggler-icon" />
-            </button>
+            />
 
-            <div className={`navbar-collapse app-navbar__collapse${isMenuOpen ? ' app-navbar__collapse--open' : ''}`} id="beeranking-navbar">
-              <div className="navbar-nav gap-2 mx-lg-auto my-3 my-lg-0 align-items-stretch align-items-lg-center">
+            <Navbar.Collapse id="beeranking-navbar" className="app-navbar__collapse">
+              <Nav className="gap-2 mx-lg-auto my-3 my-lg-0 align-items-stretch align-items-lg-center">
                 <NavLink to="/feed" onClick={handleNavigate} className={() => resolveLinkClassName('/feed')}>
                   Feed
                 </NavLink>
@@ -57,12 +55,12 @@ function AppLayout() {
                 <NavLink to="/profile" onClick={handleNavigate} className={() => resolveLinkClassName('/profile')}>
                   Profile
                 </NavLink>
-              </div>
-            </div>
+              </Nav>
+            </Navbar.Collapse>
 
             <img src="/beer-cheers.png" alt="BEERanking beers" className="app-navbar__logo" />
-          </div>
-        </nav>
+          </Container>
+        </Navbar>
       </header>
 
       <main className="app-shell__content">

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
+import { Badge, Button, Card, Form, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
+import FeedbackToast from '../../../shared/components/FeedbackToast';
 import '../styles/ProfilePage.css';
 import { getStoredUser, logout } from '../../auth/api/authApi';
 import {
@@ -204,7 +206,12 @@ function ProfilePage() {
   if (isLoading) {
     return (
       <div className="profile-page d-flex align-items-center justify-content-center">
-        <div className="profile-page__status-card">Loading profile...</div>
+        <Card className="profile-page__status-card border-0 shadow-sm">
+          <Card.Body className="d-flex align-items-center gap-3 px-4 py-3">
+            <Spinner animation="border" role="status" size="sm" />
+            <span>Loading profile...</span>
+          </Card.Body>
+        </Card>
       </div>
     );
   }
@@ -212,7 +219,9 @@ function ProfilePage() {
   if (!profile) {
     return (
       <div className="profile-page d-flex align-items-center justify-content-center">
-        <div className="profile-page__status-card">Profile data is not available.</div>
+        <Card className="profile-page__status-card border-0 shadow-sm">
+          <Card.Body className="px-4 py-3">Profile data is not available.</Card.Body>
+        </Card>
       </div>
     );
   }
@@ -223,26 +232,34 @@ function ProfilePage() {
       <div className="profile-page__content d-flex flex-column container-fluid profile-page__content-shell">
         <div className="d-flex flex-column flex-lg-row align-items-start justify-content-between gap-3 mb-3">
           <div className="flex-fill">
-            <p className="profile-page__eyebrow">BEERanking profile</p>
             <h1 className="profile-page__headline">Your profile, your favorite pours, your beer story.</h1>
           </div>
 
           <div className="d-flex flex-wrap align-self-start justify-content-start justify-content-lg-end gap-3">
-            <button type="button" className="btn profile-page__ghost-button" onClick={handleLogout}>
+            <Button type="button" variant="light" className="rounded-pill px-3 fw-semibold profile-page__ghost-action" onClick={handleLogout}>
               Log out
-            </button>
-            <button type="button" className="btn profile-page__primary-button" onClick={handleEditToggle}>
+            </Button>
+            <Button type="button" variant="warning" className="rounded-pill px-3 fw-semibold text-white profile-page__primary-action" onClick={handleEditToggle}>
               {isEditing ? 'Cancel' : 'Edit profile'}
-            </button>
+            </Button>
           </div>
         </div>
 
-        {error ? <div className="alert alert-danger profile-page__alert">{error}</div> : null}
-        {successMessage ? <div className="alert alert-success profile-page__alert">{successMessage}</div> : null}
+        {error ? (
+          <FeedbackToast
+            show
+            variant="danger"
+            title="Profile update failed"
+            message={error}
+            onClose={() => setError('')}
+          />
+        ) : null}
+        {successMessage ? <FeedbackToast show title="Profile updated" message={successMessage} onClose={() => setSuccessMessage('')} /> : null}
 
         <div className="row g-2 align-items-stretch">
           <div className="col-lg-4">
-            <section className="profile-card d-flex flex-column align-items-center text-center h-100">
+            <Card className="profile-card border-0 h-100">
+              <Card.Body className="d-flex flex-column align-items-center text-center h-100 p-0">
               <CameraCapture
                 ref={cameraCaptureRef}
                 facingMode="user"
@@ -274,24 +291,26 @@ function ProfilePage() {
                       <div className="d-flex flex-column align-items-center gap-2 mb-2">
                         <div className="d-flex flex-wrap justify-content-center gap-2">
                           {!isOpen ? (
-                            <button
+                            <Button
                               type="button"
-                              className="btn profile-card__camera-button"
+                              size="sm"
+                              variant="warning"
+                              className="rounded-pill px-3 fw-semibold text-white"
                               onClick={() => {
                                 setError('');
                                 openCamera();
                               }}
                             >
                               Use camera
-                            </button>
+                            </Button>
                           ) : (
                             <>
-                              <button type="button" className="btn profile-card__camera-button" onClick={capturePhoto} disabled={!isReady}>
+                              <Button type="button" size="sm" variant="warning" className="rounded-pill px-3 fw-semibold text-white" onClick={capturePhoto} disabled={!isReady}>
                                 {isReady ? 'Take photo' : 'Preparing camera...'}
-                              </button>
-                              <button type="button" className="btn profile-card__camera-button profile-card__camera-button--ghost" onClick={closeCamera}>
+                              </Button>
+                              <Button type="button" size="sm" variant="light" className="rounded-pill px-3 fw-semibold border" onClick={closeCamera}>
                                 Close camera
-                              </button>
+                              </Button>
                             </>
                           )}
                         </div>
@@ -304,11 +323,12 @@ function ProfilePage() {
               <div className="profile-card__identity-copy">
                 <p className="profile-card__label">Username</p>
                 {isEditing ? (
-                  <input
+                  <Form.Control
                     type="text"
                     value={draft.username}
                     onChange={handleUsernameChange}
-                    className="form-control form-control-lg profile-card__input"
+                    size="lg"
+                    className="profile-card__input"
                     placeholder="Enter your username"
                   />
                 ) : (
@@ -318,52 +338,58 @@ function ProfilePage() {
               </div>
 
               {isEditing ? (
-                <button
+                <Button
                   type="button"
-                  className="btn profile-page__primary-button profile-page__save-button"
+                  variant="warning"
+                  className="profile-page__save-button rounded-pill fw-semibold text-white"
                   onClick={handleSave}
                   disabled={isSaving}
                 >
                   {isSaving ? 'Saving...' : 'Save changes'}
-                </button>
+                </Button>
               ) : null}
-            </section>
+              </Card.Body>
+            </Card>
           </div>
 
           <div className="col-lg-8">
-            <section className="profile-card h-100">
+            <Card className="profile-card border-0 h-100">
+              <Card.Body className="h-100 p-0">
               <div className="d-flex align-items-center justify-content-between gap-3 mb-2">
                 <div>
                   <p className="profile-card__label">Favorite beers</p>
                   <h2 className="profile-card__section-title">Your current lineup</h2>
                 </div>
-                <span className="profile-card__count">{draft.favoriteBeers.length} selected</span>
+                <Badge pill bg="warning" text="dark" className="px-3 py-2 fs-6 fw-semibold profile-card__count-badge">
+                  {draft.favoriteBeers.length} selected
+                </Badge>
               </div>
 
               {isEditing ? (
                 <div className="mb-2">
-                  <input
+                  <Form.Control
                     type="text"
                     value={beerQuery}
                     onChange={(event) => setBeerQuery(event.target.value)}
-                    className="form-control profile-card__search"
+                    className="profile-card__search"
                     placeholder="Search beers to add to favorites"
                   />
 
                   <div className="profile-card__search-results">
-                    {isSearching ? <p className="profile-card__helper">Searching beer catalog...</p> : null}
+                    {isSearching ? <Form.Text className="profile-card__helper d-block">Searching beer catalog...</Form.Text> : null}
                     {!isSearching && beerQuery.trim() && beerResults.length === 0 ? (
-                      <p className="profile-card__helper">No beers found for this search.</p>
+                      <Form.Text className="profile-card__helper d-block">No beers found for this search.</Form.Text>
                     ) : null}
 
                     {beerResults.map((beer) => {
                       const isSelected = draft.favoriteBeers.some((favoriteBeer) => favoriteBeer._id === beer._id);
 
                       return (
-                        <button
+                        <Button
                           key={beer._id}
                           type="button"
-                          className="profile-card__search-result"
+                          variant="light"
+                          className="profile-card__search-result text-start"
                           onClick={() => addFavoriteBeer(beer)}
                           disabled={isSelected}
                         >
@@ -372,7 +398,7 @@ function ProfilePage() {
                             <small>{beer.brewery} • {beer.style}</small>
                           </span>
                           <span>{isSelected ? 'Added' : 'Add'}</span>
-                        </button>
+                        </Button>
                       );
                     })}
                   </div>
@@ -394,19 +420,21 @@ function ProfilePage() {
                       </div>
 
                       {isEditing ? (
-                        <button
+                        <Button
                           type="button"
-                          className="beer-chip__remove"
+                          variant="link"
+                          className="beer-chip__remove p-0 text-decoration-none"
                           onClick={() => removeFavoriteBeer(beer._id)}
                         >
                           Remove
-                        </button>
+                        </Button>
                       ) : null}
                     </article>
                   ))
                 )}
               </div>
-            </section>
+              </Card.Body>
+            </Card>
           </div>
         </div>
       </div>

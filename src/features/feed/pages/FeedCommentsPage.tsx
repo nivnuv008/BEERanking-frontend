@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import Form from 'react-bootstrap/Form';
+import Spinner from 'react-bootstrap/Spinner';
 import { getAuthToken } from '../../auth/api/authApi';
 import { getProfileImageUrl } from '../../profile/api/profileApi';
+import FeedbackToast from '../../../shared/components/FeedbackToast';
 import { createLocalComment, getFeedPostById, getPostComments, type FeedComment, type FeedPost } from '../api/feedApi';
 import PostCard from '../components/PostCard';
 import { usePostLikeState } from '../hooks/usePostLikeState';
@@ -91,7 +96,12 @@ function FeedCommentsPage() {
       <section className="feed-comments-page" aria-label="Post comments page">
         <div className="feed-comments-page__backdrop" />
         <div className="feed-comments-page__shell container-fluid position-relative p-3">
-          <div className="feed-surface-card text-center">Loading comments...</div>
+          <Card className="feed-surface-card text-center border-0">
+            <Card.Body className="d-flex flex-column align-items-center gap-3">
+              <Spinner animation="border" role="status" />
+              <span>Loading comments...</span>
+            </Card.Body>
+          </Card>
         </div>
       </section>
     );
@@ -124,17 +134,33 @@ function FeedCommentsPage() {
       <div className="feed-comments-page__shell container-fluid position-relative p-3">
         <div className="d-flex flex-column flex-lg-row align-items-start justify-content-between gap-3 mb-3">
           <div>
-            <p className="feed-comments-page__eyebrow">Post comments</p>
             <h1 className="feed-comments-page__headline">Conversation around the pour.</h1>
             <p className="feed-comments-page__subhead mb-0">Comments stay on a dedicated screen so the feed remains a clean scroll.</p>
           </div>
 
-          <button type="button" className="btn feed-button-secondary" onClick={() => navigate(returnTo)}>
+          <Button type="button" variant="outline-secondary" className="rounded-pill px-4 fw-semibold" onClick={() => navigate(returnTo)}>
             {returnLabel}
-          </button>
+          </Button>
         </div>
 
-        {error ? <div className="feed-surface-card feed-surface-card--danger mb-3" role="alert">{error}</div> : null}
+        {error ? (
+          <FeedbackToast
+            show
+            variant="danger"
+            title="Comments unavailable"
+            message={error}
+            onClose={() => setError('')}
+          />
+        ) : null}
+
+        {commentMessage ? (
+          <FeedbackToast
+            show
+            title="Comment added"
+            message={commentMessage}
+            onClose={() => setCommentMessage('')}
+          />
+        ) : null}
 
         {post ? (
           <PostCard
@@ -146,7 +172,8 @@ function FeedCommentsPage() {
           />
         ) : null}
 
-        <section className="feed-surface-card mb-3" aria-label="Add comment">
+        <Card className="feed-surface-card mb-3 border-0" aria-label="Add comment">
+          <Card.Body>
           <div className="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
             <div>
               <p className="feed-comments-page__eyebrow mb-1">Add comment</p>
@@ -155,8 +182,9 @@ function FeedCommentsPage() {
             <span className="small text-body-secondary">Stored locally for now</span>
           </div>
 
-          <textarea
-            className="form-control feed-textarea"
+          <Form.Control
+            as="textarea"
+            className="feed-textarea"
             rows={3}
             maxLength={5000}
             placeholder="What did you think about this beer?"
@@ -169,20 +197,20 @@ function FeedCommentsPage() {
 
           <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3">
             <span className="small text-body-secondary">{commentText.trim().length}/5000</span>
-            <button type="button" className="btn feed-button-primary" onClick={handleAddComment}>
+            <Button type="button" variant="warning" className="fw-semibold text-white border-0 rounded-pill px-4" onClick={handleAddComment}>
               Add comment
-            </button>
+            </Button>
           </div>
-
-          {commentMessage ? <p className="small text-body-secondary mt-3 mb-0">{commentMessage}</p> : null}
-        </section>
+          </Card.Body>
+        </Card>
 
         <div className="d-grid gap-3">
           {comments.length ? comments.map((comment) => {
             const avatarUrl = getProfileImageUrl(comment.user.profilePic);
 
             return (
-              <article key={comment._id} className="feed-comment-card p-3">
+              <Card key={comment._id} className="feed-comment-card border-0">
+                <Card.Body className="p-3">
                 <div className="d-flex align-items-center gap-3">
                   <span className="feed-comment-card__avatar" aria-hidden="true">
                     {avatarUrl ? <img src={avatarUrl} alt="" /> : getInitials(comment.user.username)}
@@ -193,7 +221,8 @@ function FeedCommentsPage() {
                   </div>
                 </div>
                 <p className="feed-comment-card__text">{comment.text}</p>
-              </article>
+                </Card.Body>
+              </Card>
             );
           }) : <div className="feed-empty-state">No comments yet. The screen is ready for the real backend comments flow.</div>}
         </div>

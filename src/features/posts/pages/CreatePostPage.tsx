@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Badge from 'react-bootstrap/Badge';
 import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
+import FeedbackToast from '../../../shared/components/FeedbackToast';
 import PostRatingField from '../components/PostRatingField';
 import '../styles/CreatePostPage.css';
 import { getAuthToken } from '../../auth/api/authApi';
@@ -17,7 +19,6 @@ function normalizeText(value: string): string {
 function CreatePostPage() {
   const navigate = useNavigate();
   const searchTimeoutRef = useRef<number | null>(null);
-  const successTimeoutRef = useRef<number | null>(null);
   const previewUrlRef = useRef<string | null>(null);
   const cameraCaptureRef = useRef<CameraCaptureHandle | null>(null);
   const [beerQuery, setBeerQuery] = useState('');
@@ -41,10 +42,6 @@ function CreatePostPage() {
 
   useEffect(() => {
     return () => {
-      if (successTimeoutRef.current) {
-        window.clearTimeout(successTimeoutRef.current);
-      }
-
       if (searchTimeoutRef.current) {
         window.clearTimeout(searchTimeoutRef.current);
       }
@@ -88,28 +85,6 @@ function CreatePostPage() {
       }
     };
   }, [beerQuery]);
-
-  useEffect(() => {
-    if (!successMessage) {
-      return;
-    }
-
-    if (successTimeoutRef.current) {
-      window.clearTimeout(successTimeoutRef.current);
-    }
-
-    successTimeoutRef.current = window.setTimeout(() => {
-      setSuccessMessage('');
-      successTimeoutRef.current = null;
-    }, 4000);
-
-    return () => {
-      if (successTimeoutRef.current) {
-        window.clearTimeout(successTimeoutRef.current);
-        successTimeoutRef.current = null;
-      }
-    };
-  }, [successMessage]);
 
   const resetImagePreview = () => {
     if (previewUrlRef.current) {
@@ -256,24 +231,24 @@ function CreatePostPage() {
 
   return (
     <section className="create-post-page" aria-label="Create post page">
+      {error ? (
+        <FeedbackToast
+          show
+          variant="danger"
+          title="Could not publish"
+          message={error}
+          onClose={() => setError('')}
+        />
+      ) : null}
+
       {successMessage ? (
-        <div className="toast show create-post-toast position-absolute top-0 end-0 m-3 border-0" role="status" aria-live="polite" aria-atomic="true">
-          <div className="toast-header create-post-toast__header border-0">
-            <span className="create-post-toast__icon" aria-hidden="true">
-              ✓
-            </span>
-            <strong className="me-auto create-post-toast__title">Post added</strong>
-            <button type="button" className="btn-close" onClick={() => setSuccessMessage('')} aria-label="Dismiss success message" />
-          </div>
-          <div className="toast-body create-post-toast__message">{successMessage}</div>
-        </div>
+        <FeedbackToast show title="Post added" message={successMessage} onClose={() => setSuccessMessage('')} />
       ) : null}
 
       <div className="create-post-page__backdrop" />
       <div className="create-post-page__shell container-fluid">
         <div className="d-flex flex-column flex-xl-row align-items-start align-items-xl-center justify-content-between gap-3 mb-2">
           <div>
-            <p className="create-post-page__eyebrow">Share a pour</p>
             <h1 className="create-post-page__headline">Post the beer.</h1>
           </div>
         </div>
@@ -283,10 +258,10 @@ function CreatePostPage() {
             <section className="create-post-card d-flex flex-column justify-content-start h-100">
               <div className="d-flex align-items-start justify-content-between gap-3 mb-2">
                 <div>
-                  <p className="create-post-card__eyebrow">Image</p>
+                  <p className="create-post-card__eyebrow">Image *</p>
                   <h2 className="create-post-card__title">Show the pour</h2>
                 </div>
-                {imageFile ? <span className="create-post-card__badge">Ready to upload</span> : null}
+                {imageFile ? <Badge pill className="create-post-card__badge">Ready to upload</Badge> : null}
               </div>
               <CameraCapture
                 ref={cameraCaptureRef}
@@ -380,11 +355,8 @@ function CreatePostPage() {
                   <p className="create-post-card__eyebrow">Details</p>
                   <h2 className="create-post-card__title">Write the post</h2>
                 </div>
-                <span className="create-post-card__badge create-post-card__badge--soft">1 image · 1 beer · 1 rating</span>
+                <Badge pill className="create-post-card__badge create-post-card__badge--soft">1 image · 1 beer · 1 rating</Badge>
               </div>
-
-              {error ? <div className="alert alert-danger create-post-card__alert">{error}</div> : null}
-
               <div className="row g-3">
                 <div className="col-lg-7">
                   <div className="create-post-form__section h-100">
@@ -460,7 +432,7 @@ function CreatePostPage() {
                 <div className="col-lg-5">
                   <div className="create-post-form__section h-100">
                     <PostRatingField
-                      label="Rating"
+                      label="Rating *"
                       inputId="create-post-rating"
                       value={rating}
                       onChange={(nextRating) => {
@@ -475,7 +447,7 @@ function CreatePostPage() {
 
               <div className="create-post-form__section">
                 <label htmlFor="post-description" className="create-post-form__label">
-                  Description
+                  Description *
                 </label>
                 <textarea
                   id="post-description"

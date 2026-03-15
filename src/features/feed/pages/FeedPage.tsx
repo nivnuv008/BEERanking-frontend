@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { Badge, Card, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { getAuthToken } from '../../auth/api/authApi';
+import FeedbackToast from '../../../shared/components/FeedbackToast';
 import { getFeedPosts, type FeedPost } from '../api/feedApi';
 import PostCard from '../components/PostCard';
 import { usePostLikeState } from '../hooks/usePostLikeState';
@@ -111,7 +113,12 @@ function FeedPage() {
       <section className="feed-page" aria-label="Feed page">
         <div className="feed-page__backdrop" />
         <div className="feed-page__shell container-fluid position-relative p-3">
-          <div className="feed-surface-card text-center">Loading the feed...</div>
+          <Card className="feed-surface-card border-0 text-center">
+            <Card.Body className="d-flex align-items-center justify-content-center gap-3 py-3">
+              <Spinner animation="border" role="status" size="sm" />
+              <span>Loading the feed...</span>
+            </Card.Body>
+          </Card>
         </div>
       </section>
     );
@@ -123,29 +130,31 @@ function FeedPage() {
       <div className="feed-page__shell container-fluid position-relative p-3">
         <div className="d-flex flex-column flex-xl-row align-items-start align-items-xl-center justify-content-between gap-3 mb-3">
           <div>
-            <p className="feed-page__eyebrow">Community feed</p>
             <h1 className="feed-page__headline">Every pour in one scroll.</h1>
           </div>
         </div>
 
         <div className="d-flex flex-wrap gap-2 mb-3">
-          <span className="badge rounded-pill px-3 py-2 feed-pill">
+          <Badge pill className="px-3 py-2 feed-pill">
             Loaded
             <strong className="ms-2">{posts.length}</strong>
-          </span>
-          <span className="badge rounded-pill px-3 py-2 feed-pill">
+          </Badge>
+          <Badge pill className="px-3 py-2 feed-pill">
             Total
             <strong className="ms-2">{totalPosts}</strong>
-          </span>
+          </Badge>
         </div>
 
         {error ? (
-          <div className="feed-surface-card feed-surface-card--danger mb-3 d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3" role="alert">
-            <span>{error}</span>
-            <button type="button" className="btn feed-button-primary" onClick={handleRetry}>
-              Retry feed
-            </button>
-          </div>
+          <FeedbackToast
+            show
+            variant="danger"
+            title="Feed unavailable"
+            message={error}
+            actionLabel="Retry feed"
+            onAction={handleRetry}
+            onClose={() => setError('')}
+          />
         ) : null}
 
         <div className="d-grid gap-3">
@@ -172,10 +181,21 @@ function FeedPage() {
           })}
         </div>
 
-        {!posts.length && !error ? <div className="feed-surface-card text-center mt-3">No posts are available yet.</div> : null}
+        {!posts.length && !error ? (
+          <Card className="feed-surface-card border-0 text-center mt-3">
+            <Card.Body>No posts are available yet.</Card.Body>
+          </Card>
+        ) : null}
 
         <div className="d-flex justify-content-center pt-1">
-          {isLoadingMore ? <div className="feed-surface-card text-center mt-3">Loading more posts...</div> : null}
+          {isLoadingMore ? (
+            <Card className="feed-surface-card border-0 text-center mt-3">
+              <Card.Body className="d-flex align-items-center justify-content-center gap-3 py-3">
+                <Spinner animation="border" role="status" size="sm" />
+                <span>Loading more posts...</span>
+              </Card.Body>
+            </Card>
+          ) : null}
         </div>
 
         <div ref={sentinelRef} className="feed-page__sentinel" aria-hidden="true" />

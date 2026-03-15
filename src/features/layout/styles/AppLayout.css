@@ -3,14 +3,12 @@
   grid-template-rows: auto 1fr;
   height: 100vh;
   overflow: hidden;
-  background:
-    radial-gradient(circle at top left, rgba(255, 222, 173, 0.45), transparent 32%),
-    linear-gradient(180deg, #fff8ee 0%, #f6e3c9 100%);
+  background: var(--app-page-background);
 }
 
 .app-shell__header {
   z-index: 20;
-  padding: 1rem 1rem 0;
+  padding: 0.8rem 1rem 0;
 }
 
 .app-shell__content {
@@ -22,11 +20,13 @@
 }
 
 .app-navbar {
+  --bs-navbar-padding-y: 0.3rem;
   border: 1px solid rgba(101, 64, 27, 0.14);
   border-radius: 24px;
   background: rgba(255, 250, 243, 0.86);
   backdrop-filter: blur(18px);
   box-shadow: 0 20px 40px rgba(83, 50, 25, 0.1);
+  overflow: visible;
 }
 
 .app-navbar__brand {
@@ -35,7 +35,6 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-decoration: none;
-  text-transform: uppercase;
 }
 
 .app-navbar__toggler {
@@ -43,17 +42,17 @@
 }
 
 .app-navbar__collapse {
-  display: flex;
-  align-items: center;
   flex: 1;
 }
 
 .app-navbar__logo {
-  width: 68px;
-  height: 68px;
+  width: 42px;
+  height: 42px;
   object-fit: contain;
   margin-left: 0.25rem;
   filter: drop-shadow(0 8px 18px rgba(123, 52, 30, 0.18));
+  transform: scale(1.8);
+  transform-origin: center;
 }
 
 .app-navbar__link {
@@ -85,21 +84,13 @@
 }
 
 @media (max-width: 991px) {
-  .app-navbar__collapse {
-    display: none;
-    width: 100%;
-  }
-
-  .app-navbar__collapse--open {
-    display: block;
-  }
-
   .app-navbar__link {
     display: block;
   }
 
   .app-navbar__logo {
-    width: 50px;
-    height: 50px;
+    width: 34px;
+    height: 34px;
+    transform: scale(1.65);
   }
 }

@@ -98,9 +98,9 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  height: clamp(150px, 26vh, 210px);
-  min-height: 150px;
-  max-height: 210px;
+  height: clamp(190px, 32vh, 280px);
+  min-height: 190px;
+  max-height: 280px;
   width: 100%;
   border: 1px dashed rgba(123, 52, 30, 0.26);
   border-radius: 22px;
@@ -166,6 +166,7 @@
 
 .create-post-uploader__camera-preview {
   background: #2b1f17;
+  object-fit: contain;
 }
 
 .create-post-uploader__overlay {
@@ -346,7 +347,8 @@
   }
 
   .create-post-uploader {
-    height: 240px;
+    height: 280px;
+    min-height: 280px;
     max-height: none;
   }
 
@@ -381,8 +383,8 @@
   }
 
   .create-post-uploader {
-    height: 220px;
-    min-height: 220px;
+    height: 240px;
+    min-height: 240px;
     max-height: none;
   }
 

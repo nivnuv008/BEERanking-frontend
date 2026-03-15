@@ -167,6 +167,7 @@
 
 .feed-card__beer-label {
   display: block;
+  padding-left: 0.12rem;
   color: var(--feed-muted);
   font-size: 0.75rem;
   font-weight: 800;

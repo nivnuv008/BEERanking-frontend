@@ -1,3 +1,6 @@
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import Form from 'react-bootstrap/Form';
+import ToggleButton from 'react-bootstrap/ToggleButton';
 import './PostRatingField.css';
 
 type PostRatingFieldProps = {
@@ -25,31 +28,36 @@ function PostRatingField({ label, value, onChange, disabled = false, inputId }: 
     <div className="rating-field">
       <div className="d-flex align-items-start justify-content-between gap-3 mb-3">
         <div>
-          <label htmlFor={inputId} className="create-post-form__label rating-field__label">
+          <Form.Label htmlFor={inputId} className="create-post-form__label rating-field__label">
             {label}
-          </label>
-          <p className="rating-field__hint">Whole numbers or decimals from 1.0 to 5.0.</p>
+          </Form.Label>
+          <Form.Text className="rating-field__hint">Whole numbers or decimals from 1.0 to 5.0.</Form.Text>
         </div>
         <div className="rating-field__value">{safeValue.toFixed(1)}</div>
       </div>
 
-      <div className="rating-field__quick-picks" role="group" aria-label={`${label} presets`}>
+      <ButtonGroup className="rating-field__quick-picks" aria-label={`${label} presets`}>
         {QUICK_RATINGS.map((quickValue) => (
-          <button
+          <ToggleButton
             key={quickValue}
-            type="button"
+            id={`${inputId ?? label}-${quickValue}`}
+            type="radio"
+            name={inputId ?? label}
+            value={quickValue}
+            variant={safeValue === quickValue ? 'warning' : 'outline-secondary'}
+            checked={safeValue === quickValue}
             className={`rating-field__chip${safeValue === quickValue ? ' rating-field__chip--active' : ''}`}
             onClick={() => onChange(quickValue)}
             disabled={disabled}
           >
             {quickValue.toFixed(1)}
-          </button>
+          </ToggleButton>
         ))}
-      </div>
+      </ButtonGroup>
 
       <div className="rating-field__controls">
-        <input
-          type="range"
+        <Form.Range
+          id={inputId}
           min={1}
           max={5}
           step={0.1}

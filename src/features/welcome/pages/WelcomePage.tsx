@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
+import { Alert, Button, Card, Form } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/WelcomePage.css';
 import { getAuthRedirectPath, logout, persistAuthSession, signIn, signInWithGoogle } from '../../auth/api/authApi';
@@ -111,55 +112,57 @@ function WelcomePage() {
         </div>
 
         <div className="col-lg-5 d-flex align-items-center justify-content-center p-5 welcome-page__panel">
-          <div className="w-100 welcome-page__form-shell" style={{ maxWidth: '400px' }}>
+          <Card className="w-100 welcome-page__form-shell border-0" style={{ maxWidth: '400px' }}>
+            <Card.Body className="p-0">
             <h2 className="h3 fw-bold mb-4">Log into BEERanking</h2>
             
             <form onSubmit={handleSignIn}>
-              {error && <div className="alert alert-danger" role="alert">{error}</div>}
+              {error ? <Alert variant="danger">{error}</Alert> : null}
 
               <div className="mb-3">
-                <input 
+                <Form.Control
                   name="username"
                   type="text" 
                   placeholder="Username" 
-                  className="form-control form-control-lg"
+                  size="lg"
                   value={formData.username}
                   onChange={handleChange}
                   disabled={isSubmitting}
                 />
               </div>
               <div className="mb-3">
-                <input 
+                <Form.Control
                   name="password"
                   type="password" 
                   placeholder="Password" 
-                  className="form-control form-control-lg"
+                  size="lg"
                   value={formData.password}
                   onChange={handleChange}
                   disabled={isSubmitting}
                 />
               </div>
               
-              <button type="submit" className="btn btn-primary w-100 mb-3" disabled={isSubmitting}>
+              <Button type="submit" variant="warning" className="w-100 mb-3 text-white fw-semibold border-0" disabled={isSubmitting}>
                 {isSubmitting ? 'Signing in...' : 'Log in'}
-              </button>
+              </Button>
               
-              <button type="button" className="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2 mb-3" onClick={handleGoogleSignIn} disabled={isSubmitting}>
+              <Button type="button" variant="outline-secondary" className="w-100 d-flex align-items-center justify-content-center gap-2 mb-3" onClick={handleGoogleSignIn} disabled={isSubmitting}>
                 <img src={GoogleLogo} alt="Google" width="18" height="18" />
                 Continue with Google
-              </button>
+              </Button>
               
-              <button type="button" className="btn btn-outline-primary w-100" onClick={handleCreateAccount}>
+              <Button type="button" variant="outline-warning" className="w-100 fw-semibold" onClick={handleCreateAccount}>
                 Create new account
-              </button>
+              </Button>
 
               {showClearSession ? (
-                <button type="button" className="btn btn-link w-100 mt-3 welcome-page__clear-session" onClick={handleClearSession}>
+                <Button type="button" variant="link" className="w-100 mt-3 welcome-page__clear-session" onClick={handleClearSession}>
                   Clear saved session
-                </button>
+                </Button>
               ) : null}
             </form>
-          </div>
+            </Card.Body>
+          </Card>
         </div>
       </div>
     </div>

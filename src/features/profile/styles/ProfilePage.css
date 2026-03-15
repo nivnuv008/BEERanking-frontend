@@ -59,26 +59,12 @@
   font-weight: 800;
 }
 
-.profile-page__primary-button,
-.profile-page__ghost-button {
-  padding: 0.72rem 1.1rem;
-  border-radius: 999px;
-  font-weight: 700;
-  border: 1px solid transparent;
-}
-
-.profile-page__primary-button {
+.profile-page__primary-action {
   background: linear-gradient(135deg, var(--profile-accent) 0%, #e07a2d 100%);
-  color: #fff;
   box-shadow: 0 12px 30px rgba(192, 88, 27, 0.22);
 }
 
-.profile-page__primary-button:hover,
-.profile-page__primary-button:focus {
-  color: #fff;
-}
-
-.profile-page__ghost-button {
+.profile-page__ghost-action {
   background: rgba(255, 255, 255, 0.5);
   border-color: var(--profile-border);
   color: var(--profile-ink);
@@ -122,31 +108,6 @@
   font-weight: 800;
 }
 
-.profile-card__camera-button {
-  padding: 0.45rem 0.8rem;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #c0581b 0%, #e07a2d 100%);
-  color: #fff;
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.profile-card__camera-button:hover,
-.profile-card__camera-button:focus {
-  color: #fff;
-}
-
-.profile-card__camera-button--ghost {
-  border: 1px solid rgba(82, 96, 109, 0.18);
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--profile-ink);
-}
-
-.profile-card__camera-button--ghost:hover,
-.profile-card__camera-button--ghost:focus {
-  color: var(--profile-ink);
-}
-
 .profile-card__identity-copy {
   width: 100%;
 }
@@ -182,14 +143,8 @@
 .profile-page__save-button {
   width: 100%;
   margin-top: 0.7rem;
-}
-
-.profile-card__count {
-  padding: 0.35rem 0.7rem;
-  border-radius: 999px;
-  background: rgba(192, 88, 27, 0.12);
-  color: var(--profile-accent-deep);
-  font-weight: 700;
+  background: linear-gradient(135deg, var(--profile-accent) 0%, #e07a2d 100%);
+  border: 0;
 }
 
 .profile-card__search-results {
@@ -210,7 +165,6 @@
   border: 1px solid var(--profile-border);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.72);
-  text-align: left;
 }
 
 .profile-card__search-result small {
@@ -265,8 +219,6 @@
 }
 
 .beer-chip__remove {
-  border: 0;
-  background: transparent;
   color: var(--profile-accent-deep);
   font-weight: 700;
 }

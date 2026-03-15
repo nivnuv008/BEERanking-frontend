@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import Button from 'react-bootstrap/Button';
 import { getProfileImageUrl } from '../../profile/api/profileApi';
 import type { FeedPost } from '../api/feedApi';
 
@@ -108,23 +109,24 @@ function PostCard({ post, liked, likeCount, likeDisabled = false, commentDisable
               <div className="feed-card__footer d-flex flex-wrap align-items-center justify-content-between gap-3 mt-auto pt-3">
                 <div className="d-flex flex-wrap gap-3">
                   {onToggleLike ? (
-                    <button
+                    <Button
                       type="button"
-                      className={`btn feed-button-secondary${liked ? ' feed-card__action--liked' : ''}`}
+                      variant={liked ? 'danger' : 'outline-secondary'}
+                      className={`feed-card__action-button rounded-pill px-4 fw-semibold${liked ? ' feed-card__action--liked' : ''}`}
                       onClick={() => onToggleLike(post)}
                       disabled={likeDisabled}
                       aria-pressed={liked}
                     >
                       <HeartIcon />
                       <span>{liked ? 'Liked' : 'Like'} · {likeCount}</span>
-                    </button>
+                    </Button>
                   ) : null}
 
                   {onOpenComments ? (
-                    <button type="button" className="btn feed-button-secondary" onClick={() => onOpenComments(post)} disabled={commentDisabled}>
+                    <Button type="button" variant="outline-secondary" className="feed-card__action-button rounded-pill px-4 fw-semibold" onClick={() => onOpenComments(post)} disabled={commentDisabled}>
                       <CommentIcon />
                       <span>Comments · {post.commentCount}</span>
-                    </button>
+                    </Button>
                   ) : null}
 
                   {footerActions}

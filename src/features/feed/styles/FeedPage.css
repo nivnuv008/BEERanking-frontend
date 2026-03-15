@@ -92,12 +92,6 @@
   box-shadow: var(--feed-shadow);
 }
 
-.feed-surface-card--danger {
-  color: #7f1d1d;
-  background: rgba(254, 242, 242, 0.92);
-  border-color: rgba(185, 28, 28, 0.16);
-}
-
 .feed-card,
 .feed-comment-card {
   border: 1px solid var(--feed-border);
@@ -240,8 +234,7 @@
   border-top: 1px solid rgba(113, 72, 37, 0.1);
 }
 
-.feed-button-secondary,
-.feed-button-primary {
+.feed-card__action-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -250,45 +243,22 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.feed-button-secondary {
+.feed-card__action-button:hover {
+  transform: translateY(-1px);
+}
+
+.feed-card__action-button.btn-outline-secondary,
+.feed-card__action-button.btn-outline-secondary:hover,
+.feed-card__action-button.btn-outline-secondary:focus-visible,
+.feed-card__action-button.btn-outline-secondary:active,
+.feed-card__action-button.btn-outline-secondary:disabled {
   background: rgba(255, 248, 237, 0.86);
   border-color: rgba(124, 45, 18, 0.12);
   color: var(--feed-accent-deep);
   box-shadow: inset 0 0 0 1px rgba(124, 45, 18, 0.12);
 }
 
-.feed-button-primary {
-  background: linear-gradient(135deg, #b45309 0%, #c75b12 100%);
-  border-color: transparent;
-  color: #fffaf3;
-  box-shadow: 0 12px 24px rgba(180, 83, 9, 0.22);
-}
-
-.feed-button-secondary:hover,
-.feed-button-primary:hover {
-  transform: translateY(-1px);
-}
-
-.feed-button-secondary:hover,
-.feed-button-secondary:focus-visible,
-.feed-button-secondary:active,
-.feed-button-secondary:disabled {
-  background: rgba(255, 248, 237, 0.86);
-  border-color: rgba(124, 45, 18, 0.12);
-  color: var(--feed-accent-deep);
-}
-
-.feed-button-primary:hover,
-.feed-button-primary:focus-visible,
-.feed-button-primary:active,
-.feed-button-primary:disabled {
-  background: linear-gradient(135deg, #b45309 0%, #c75b12 100%);
-  border-color: transparent;
-  color: #fffaf3;
-}
-
-.feed-button-secondary:disabled,
-.feed-button-primary:disabled {
+.feed-card__action-button:disabled {
   opacity: 0.55;
   transform: none;
 }
@@ -382,8 +352,7 @@
     width: 100%;
   }
 
-  .feed-button-secondary,
-  .feed-button-primary {
+  .feed-card__action-button {
     width: 100%;
   }
 }

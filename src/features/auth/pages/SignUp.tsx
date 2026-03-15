@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
+import { Alert, Button, Card, Form } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getAuthRedirectPath, persistAuthSession, signUp, signUpWithGoogle } from '../api/authApi';
 import { getGoogleIdToken } from '../api/googleAuth';
@@ -107,15 +108,16 @@ function SignUp() {
   };
 
   return (
-    <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
-      <div className="card shadow-lg" style={{ maxWidth: '500px', width: '100%' }}>
-        <div className="card-body p-4">
-          <button 
-            className="btn btn-link text-decoration-none p-0 mb-3" 
+    <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light px-3 py-4">
+      <Card className="shadow-lg border-0" style={{ maxWidth: '500px', width: '100%' }}>
+        <Card.Body className="p-4">
+          <Button
+            variant="link"
+            className="text-decoration-none p-0 mb-3"
             onClick={() => navigate('/')}
           >
             ← Back
-          </button>
+          </Button>
           
           <div className="text-center mb-4">
             <h1 className="h2 fw-bold">Join BEERanking</h1>
@@ -123,16 +125,15 @@ function SignUp() {
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
-            {error && <div className="alert alert-danger" role="alert">{error}</div>}
+            {error ? <Alert variant="danger">{error}</Alert> : null}
             
             <div className="mb-3">
-              <label htmlFor="username" className="form-label">Username</label>
-              <input 
+              <Form.Label htmlFor="username">Username</Form.Label>
+              <Form.Control
                 id="username"
                 name="username"
                 type="text" 
                 placeholder="Choose a username" 
-                className="form-control"
                 value={formData.username}
                 onChange={handleChange}
                 disabled={isSubmitting}
@@ -140,13 +141,12 @@ function SignUp() {
             </div>
 
             <div className="mb-3">
-              <label htmlFor="email" className="form-label">Email</label>
-              <input 
+              <Form.Label htmlFor="email">Email</Form.Label>
+              <Form.Control
                 id="email"
                 name="email"
                 type="email" 
                 placeholder="Enter your email" 
-                className="form-control"
                 value={formData.email}
                 onChange={handleChange}
                 disabled={isSubmitting}
@@ -154,13 +154,12 @@ function SignUp() {
             </div>
 
             <div className="mb-3">
-              <label htmlFor="password" className="form-label">Password</label>
-              <input 
+              <Form.Label htmlFor="password">Password</Form.Label>
+              <Form.Control
                 id="password"
                 name="password"
                 type="password" 
                 placeholder="Create a password (min. 6 characters)" 
-                className="form-control"
                 value={formData.password}
                 onChange={handleChange}
                 disabled={isSubmitting}
@@ -168,43 +167,43 @@ function SignUp() {
             </div>
 
             <div className="mb-3">
-              <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-              <input 
+              <Form.Label htmlFor="confirmPassword">Confirm Password</Form.Label>
+              <Form.Control
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password" 
                 placeholder="Confirm your password" 
-                className="form-control"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 disabled={isSubmitting}
               />
             </div>
             
-            <button type="submit" className="btn btn-primary w-100 mb-3" disabled={isSubmitting}>
+            <Button type="submit" variant="warning" className="w-100 mb-3 text-white fw-semibold border-0" disabled={isSubmitting}>
               {isSubmitting ? 'Creating account...' : 'Create Account'}
-            </button>
+            </Button>
           </form>
 
           <div className="text-center my-3">
             <span className="text-muted">or sign up with</span>
           </div>
 
-          <button 
+          <Button
             type="button" 
-            className="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2 mb-3"
+            variant="outline-secondary"
+            className="w-100 d-flex align-items-center justify-content-center gap-2 mb-3"
             onClick={handleGoogleSignUp}
             disabled={isSubmitting}
           >
             <img src={GoogleLogo} alt="Google" width="18" height="18" />
             Google
-          </button>
+          </Button>
 
           <div className="text-center">
             <p className="text-muted mb-0">Already have an account? <a href="/" className="text-decoration-none">Sign in</a></p>
           </div>
-        </div>
-      </div>
+        </Card.Body>
+      </Card>
     </div>
   );
 }

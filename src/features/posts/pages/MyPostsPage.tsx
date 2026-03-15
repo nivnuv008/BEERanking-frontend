@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
+import { Alert, Badge, Button, Card, Form, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { getAuthToken } from '../../auth/api/authApi';
 import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
@@ -335,7 +336,12 @@ function MyPostsPage() {
       <section className="feed-page my-posts-page" aria-label="My posts page">
         <div className="feed-page__backdrop" />
         <div className="feed-page__shell container-fluid position-relative p-3">
-          <div className="feed-surface-card text-center">Loading your posts...</div>
+          <Card className="feed-surface-card border-0 text-center">
+            <Card.Body className="d-flex align-items-center justify-content-center gap-3 py-3">
+              <Spinner animation="border" role="status" size="sm" />
+              <span>Loading your posts...</span>
+            </Card.Body>
+          </Card>
         </div>
       </section>
     );
@@ -364,43 +370,44 @@ function MyPostsPage() {
         </div>
 
         <div className="d-flex flex-wrap gap-2 mb-3">
-          <span className="badge rounded-pill px-3 py-2 feed-pill">
+          <Badge pill className="px-3 py-2 feed-pill">
             Loaded
             <strong className="ms-2">{posts.length}</strong>
-          </span>
-          <span className="badge rounded-pill px-3 py-2 feed-pill">
+          </Badge>
+          <Badge pill className="px-3 py-2 feed-pill">
             Total
             <strong className="ms-2">{totalPosts}</strong>
-          </span>
+          </Badge>
           {editDraft ? (
-            <span className="badge rounded-pill px-3 py-2 feed-pill my-posts-page__pill-active">
+            <Badge pill className="px-3 py-2 feed-pill my-posts-page__pill-active">
               Editing
               <strong className="ms-2">1</strong>
-            </span>
+            </Badge>
           ) : null}
         </div>
 
         {error ? (
-          <div className="feed-surface-card feed-surface-card--danger mb-3 d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3" role="alert">
+          <Alert variant="danger" className="mb-3 d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3">
             <span>{error}</span>
-            <button type="button" className="btn feed-button-primary" onClick={handleRetry}>
+            <Button type="button" variant="warning" className="fw-semibold text-white border-0 align-self-start align-self-md-auto" onClick={handleRetry}>
               Retry
-            </button>
-          </div>
+            </Button>
+          </Alert>
         ) : null}
 
-        {successMessage ? <div className="feed-surface-card my-posts-page__success mb-3">{successMessage}</div> : null}
+        {successMessage ? <Alert variant="success" className="my-posts-page__success mb-3">{successMessage}</Alert> : null}
 
         {editDraft && editedPost ? (
-          <section className="feed-surface-card my-posts-editor mb-3" aria-label="Edit post">
+          <Card className="feed-surface-card my-posts-editor mb-3 border-0" aria-label="Edit post">
+            <Card.Body className="p-0">
             <div className="d-flex flex-column flex-lg-row align-items-start justify-content-between gap-3 mb-3">
               <div>
                 <p className="feed-page__eyebrow mb-1">Edit post</p>
                 <h2 className="my-posts-editor__title">Update photo, rating, and tasting note.</h2>
               </div>
-              <button type="button" className="btn feed-button-secondary" onClick={clearEditor} disabled={isSaving}>
+              <Button type="button" variant="outline-secondary" className="rounded-pill px-4 fw-semibold" onClick={clearEditor} disabled={isSaving}>
                 Cancel
-              </button>
+              </Button>
             </div>
 
             <div className="row g-3 align-items-start">
@@ -422,7 +429,7 @@ function MyPostsPage() {
                       </div>
 
                       <div className="d-grid gap-2 mt-3">
-                        <label className="btn feed-button-secondary my-posts-editor__file-button">
+                        <label className="btn btn-outline-secondary rounded-pill px-4 fw-semibold my-posts-editor__file-button">
                           <input type="file" accept="image/*" onChange={handleDraftImageChange} disabled={isSaving || isOpen} />
                           <span>{editDraft.imageFile ? 'Choose another image' : 'Replace image'}</span>
                         </label>
@@ -442,18 +449,18 @@ function MyPostsPage() {
                           </button>
                         ) : (
                           <>
-                            <button type="button" className="btn btn-warning rounded-pill px-4 fw-semibold text-white shadow-sm" onClick={capturePhoto} disabled={!isReady || isSaving}>
+                            <Button type="button" variant="warning" className="rounded-pill px-4 fw-semibold text-white shadow-sm border-0" onClick={capturePhoto} disabled={!isReady || isSaving}>
                               {isReady ? 'Take photo' : 'Preparing camera...'}
-                            </button>
-                            <button type="button" className="btn feed-button-secondary" onClick={closeCamera} disabled={isSaving}>
+                            </Button>
+                            <Button type="button" variant="outline-secondary" className="rounded-pill px-4 fw-semibold" onClick={closeCamera} disabled={isSaving}>
                               Close camera
-                            </button>
+                            </Button>
                           </>
                         )}
 
-                        <button type="button" className="btn feed-button-secondary" onClick={handleUseCurrentImage} disabled={!editDraft.imageFile || isSaving || isOpen}>
+                        <Button type="button" variant="outline-secondary" className="rounded-pill px-4 fw-semibold" onClick={handleUseCurrentImage} disabled={!editDraft.imageFile || isSaving || isOpen}>
                           Keep current image
-                        </button>
+                        </Button>
                       </div>
                     </>
                   )}
@@ -479,10 +486,10 @@ function MyPostsPage() {
                     <label htmlFor="my-post-beer" className="my-posts-editor__label">
                       Beer
                     </label>
-                    <input
+                    <Form.Control
                       id="my-post-beer"
                       type="text"
-                      className="form-control my-posts-editor__input"
+                      className="my-posts-editor__input"
                       value={editedPost.beer?.name ?? 'Beer details unavailable'}
                       disabled
                     />
@@ -492,9 +499,10 @@ function MyPostsPage() {
                     <label htmlFor="my-post-description" className="my-posts-editor__label">
                       Description
                     </label>
-                    <textarea
+                    <Form.Control
+                      as="textarea"
                       id="my-post-description"
-                      className="form-control feed-textarea"
+                      className="feed-textarea"
                       rows={6}
                       maxLength={DESCRIPTION_LIMIT}
                       value={editDraft.description}
@@ -512,16 +520,17 @@ function MyPostsPage() {
                 </div>
 
                 <div className="d-flex flex-wrap gap-3 mt-3">
-                  <button type="button" className="btn feed-button-primary" onClick={handleSaveEdit} disabled={isSaving}>
+                  <Button type="button" variant="warning" className="fw-semibold text-white border-0 rounded-pill px-4" onClick={handleSaveEdit} disabled={isSaving}>
                     {isSaving ? 'Saving...' : 'Save changes'}
-                  </button>
-                  <button type="button" className="btn feed-button-secondary" onClick={clearEditor} disabled={isSaving}>
+                  </Button>
+                  <Button type="button" variant="outline-secondary" className="rounded-pill px-4 fw-semibold" onClick={clearEditor} disabled={isSaving}>
                     Discard changes
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
-          </section>
+            </Card.Body>
+          </Card>
         ) : null}
 
         <div className="d-grid gap-3">
@@ -544,7 +553,7 @@ function MyPostsPage() {
                 <>
                   <button
                     type="button"
-                    className={`btn feed-button-secondary${editDraft?.postId === post._id ? ' my-posts-card__action--active' : ''}`}
+                    className={`btn btn-outline-secondary rounded-pill px-4 fw-semibold${editDraft?.postId === post._id ? ' my-posts-card__action--active' : ''}`}
                     onClick={() => handleStartEditing(post)}
                     disabled={deletingPostId === post._id}
                   >
@@ -567,14 +576,21 @@ function MyPostsPage() {
         {!posts.length && !error ? (
           <div className="feed-empty-state text-center mt-3">
             <p className="mb-3">You have not posted anything yet.</p>
-            <button type="button" className="btn feed-button-primary" onClick={() => navigate('/create-post')}>
+            <Button type="button" variant="warning" className="fw-semibold text-white border-0 rounded-pill px-4" onClick={() => navigate('/create-post')}>
               Create your first post
-            </button>
+            </Button>
           </div>
         ) : null}
 
         <div className="d-flex justify-content-center pt-1">
-          {isLoadingMore ? <div className="feed-surface-card text-center mt-3">Loading more posts...</div> : null}
+          {isLoadingMore ? (
+            <Card className="feed-surface-card border-0 text-center mt-3">
+              <Card.Body className="d-flex align-items-center justify-content-center gap-3 py-3">
+                <Spinner animation="border" role="status" size="sm" />
+                <span>Loading more posts...</span>
+              </Card.Body>
+            </Card>
+          ) : null}
         </div>
 
         <div ref={sentinelRef} className="feed-page__sentinel" aria-hidden="true" />

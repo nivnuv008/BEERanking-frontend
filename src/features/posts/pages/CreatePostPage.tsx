@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Badge from 'react-bootstrap/Badge';
+import Toast from 'react-bootstrap/Toast';
 import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
 import PostRatingField from '../components/PostRatingField';
 import '../styles/CreatePostPage.css';
@@ -257,16 +259,15 @@ function CreatePostPage() {
   return (
     <section className="create-post-page" aria-label="Create post page">
       {successMessage ? (
-        <div className="toast show create-post-toast position-absolute top-0 end-0 m-3 border-0" role="status" aria-live="polite" aria-atomic="true">
-          <div className="toast-header create-post-toast__header border-0">
+        <Toast show className="create-post-toast position-absolute top-0 end-0 m-3 border-0" onClose={() => setSuccessMessage('')} role="status" aria-live="polite" aria-atomic="true">
+          <Toast.Header className="create-post-toast__header border-0">
             <span className="create-post-toast__icon" aria-hidden="true">
               ✓
             </span>
             <strong className="me-auto create-post-toast__title">Post added</strong>
-            <button type="button" className="btn-close" onClick={() => setSuccessMessage('')} aria-label="Dismiss success message" />
-          </div>
-          <div className="toast-body create-post-toast__message">{successMessage}</div>
-        </div>
+          </Toast.Header>
+          <Toast.Body className="create-post-toast__message">{successMessage}</Toast.Body>
+        </Toast>
       ) : null}
 
       <div className="create-post-page__backdrop" />
@@ -286,7 +287,7 @@ function CreatePostPage() {
                   <p className="create-post-card__eyebrow">Image</p>
                   <h2 className="create-post-card__title">Show the pour</h2>
                 </div>
-                {imageFile ? <span className="create-post-card__badge">Ready to upload</span> : null}
+                {imageFile ? <Badge pill className="create-post-card__badge">Ready to upload</Badge> : null}
               </div>
               <CameraCapture
                 ref={cameraCaptureRef}
@@ -380,7 +381,7 @@ function CreatePostPage() {
                   <p className="create-post-card__eyebrow">Details</p>
                   <h2 className="create-post-card__title">Write the post</h2>
                 </div>
-                <span className="create-post-card__badge create-post-card__badge--soft">1 image · 1 beer · 1 rating</span>
+                <Badge pill className="create-post-card__badge create-post-card__badge--soft">1 image · 1 beer · 1 rating</Badge>
               </div>
 
               {error ? <div className="alert alert-danger create-post-card__alert">{error}</div> : null}

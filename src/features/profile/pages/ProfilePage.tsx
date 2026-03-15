@@ -231,7 +231,6 @@ function ProfilePage() {
       <div className="profile-page__content d-flex flex-column container-fluid profile-page__content-shell">
         <div className="d-flex flex-column flex-lg-row align-items-start justify-content-between gap-3 mb-3">
           <div className="flex-fill">
-            <p className="profile-page__eyebrow">BEERanking profile</p>
             <h1 className="profile-page__headline">Your profile, your favorite pours, your beer story.</h1>
           </div>
 

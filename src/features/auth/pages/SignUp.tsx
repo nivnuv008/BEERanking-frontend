@@ -108,7 +108,7 @@ function SignUp() {
   };
 
   return (
-    <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light px-3 py-4">
+    <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center app-auth-page px-3 py-4">
       <Card className="shadow-lg border-0" style={{ maxWidth: '500px', width: '100%' }}>
         <Card.Body className="p-4">
           <Button

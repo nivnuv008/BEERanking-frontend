@@ -134,7 +134,6 @@ function FeedCommentsPage() {
       <div className="feed-comments-page__shell container-fluid position-relative p-3">
         <div className="d-flex flex-column flex-lg-row align-items-start justify-content-between gap-3 mb-3">
           <div>
-            <p className="feed-comments-page__eyebrow">Post comments</p>
             <h1 className="feed-comments-page__headline">Conversation around the pour.</h1>
             <p className="feed-comments-page__subhead mb-0">Comments stay on a dedicated screen so the feed remains a clean scroll.</p>
           </div>

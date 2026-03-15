@@ -16,17 +16,11 @@
 }
 
 .feed-page {
-  background:
-    radial-gradient(circle at top left, rgba(255, 216, 154, 0.4), transparent 26%),
-    radial-gradient(circle at bottom right, rgba(191, 95, 28, 0.18), transparent 34%),
-    linear-gradient(140deg, #fff8ee 0%, #f1debf 42%, #ebc48a 100%);
+  background: var(--app-page-background);
 }
 
 .feed-comments-page {
-  background:
-    radial-gradient(circle at top left, rgba(255, 221, 171, 0.42), transparent 30%),
-    radial-gradient(circle at bottom right, rgba(180, 83, 9, 0.18), transparent 32%),
-    linear-gradient(150deg, #fff8ef 0%, #f1debf 40%, #ebc48a 100%);
+  background: var(--app-page-background);
 }
 
 .feed-page__backdrop,

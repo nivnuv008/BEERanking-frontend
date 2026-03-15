@@ -364,7 +364,6 @@ function MyPostsPage() {
       <div className="feed-page__shell container-fluid position-relative p-3">
         <div className="d-flex flex-column flex-xl-row align-items-start align-items-xl-center justify-content-between gap-3 mb-3">
           <div>
-            <p className="feed-page__eyebrow">My posts</p>
             <h1 className="feed-page__headline">Your pours, your notes, your edits.</h1>
           </div>
         </div>

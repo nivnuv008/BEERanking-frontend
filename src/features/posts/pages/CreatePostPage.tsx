@@ -274,7 +274,6 @@ function CreatePostPage() {
       <div className="create-post-page__shell container-fluid">
         <div className="d-flex flex-column flex-xl-row align-items-start align-items-xl-center justify-content-between gap-3 mb-2">
           <div>
-            <p className="create-post-page__eyebrow">Share a pour</p>
             <h1 className="create-post-page__headline">Post the beer.</h1>
           </div>
         </div>

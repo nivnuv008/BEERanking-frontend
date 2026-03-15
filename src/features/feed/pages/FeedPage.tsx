@@ -129,7 +129,6 @@ function FeedPage() {
       <div className="feed-page__shell container-fluid position-relative p-3">
         <div className="d-flex flex-column flex-xl-row align-items-start align-items-xl-center justify-content-between gap-3 mb-3">
           <div>
-            <p className="feed-page__eyebrow">Community feed</p>
             <h1 className="feed-page__headline">Every pour in one scroll.</h1>
           </div>
         </div>

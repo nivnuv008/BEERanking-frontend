@@ -3,9 +3,7 @@
   grid-template-rows: auto 1fr;
   height: 100vh;
   overflow: hidden;
-  background:
-    radial-gradient(circle at top left, rgba(255, 222, 173, 0.45), transparent 32%),
-    linear-gradient(180deg, #fff8ee 0%, #f6e3c9 100%);
+  background: var(--app-page-background);
 }
 
 .app-shell__header {

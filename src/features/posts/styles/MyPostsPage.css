@@ -1,8 +1,5 @@
 .my-posts-page {
-  background:
-    radial-gradient(circle at top left, rgba(255, 216, 154, 0.4), transparent 24%),
-    radial-gradient(circle at right center, rgba(180, 83, 9, 0.14), transparent 30%),
-    linear-gradient(145deg, #fff7ec 0%, #f2dfc1 44%, #e8c088 100%);
+  background: var(--app-page-background);
 }
 
 .my-posts-page__pill-active {

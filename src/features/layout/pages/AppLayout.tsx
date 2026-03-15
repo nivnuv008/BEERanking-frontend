@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
-import '../styles/AppLayout.css';
+import { useState } from "react";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
+import Container from "react-bootstrap/Container";
+import Nav from "react-bootstrap/Nav";
+import Navbar from "react-bootstrap/Navbar";
+import "../styles/AppLayout.css";
 
 type CommentsLocationState = {
   returnTo?: string;
@@ -15,11 +15,16 @@ function AppLayout() {
   const locationState = location.state as CommentsLocationState | null;
 
   const resolveLinkClassName = (targetPath: string) => {
-    const isDirectMatch = location.pathname === targetPath || location.pathname.startsWith(`${targetPath}/`);
-    const isCommentsMatch = location.pathname.startsWith('/posts/') && location.pathname.endsWith('/comments') && (locationState?.returnTo ?? '/feed') === targetPath;
+    const isDirectMatch =
+      location.pathname === targetPath ||
+      location.pathname.startsWith(`${targetPath}/`);
+    const isCommentsMatch =
+      location.pathname.startsWith("/posts/") &&
+      location.pathname.endsWith("/comments") &&
+      (locationState?.returnTo ?? "/feed") === targetPath;
     const isActive = isDirectMatch || isCommentsMatch;
 
-    return `app-navbar__link${isActive ? ' app-navbar__link--active' : ''}`;
+    return `app-navbar__link${isActive ? " app-navbar__link--active" : ""}`;
   };
 
   const handleNavigate = () => {
@@ -41,24 +46,54 @@ function AppLayout() {
               onClick={() => setIsMenuOpen((current) => !current)}
             />
 
-            <Navbar.Collapse id="beeranking-navbar" className="app-navbar__collapse">
+            <Navbar.Collapse
+              id="beeranking-navbar"
+              className="app-navbar__collapse"
+            >
               <Nav className="gap-2 mx-lg-auto my-3 my-lg-0 align-items-stretch align-items-lg-center">
-                <NavLink to="/feed" onClick={handleNavigate} className={() => resolveLinkClassName('/feed')}>
+                <NavLink
+                  to="/feed"
+                  onClick={handleNavigate}
+                  className={() => resolveLinkClassName("/feed")}
+                >
                   Feed
                 </NavLink>
-                <NavLink to="/my-posts" onClick={handleNavigate} className={() => resolveLinkClassName('/my-posts')}>
+                <NavLink
+                  to="/my-posts"
+                  onClick={handleNavigate}
+                  className={() => resolveLinkClassName("/my-posts")}
+                >
                   My posts
                 </NavLink>
-                <NavLink to="/create-post" onClick={handleNavigate} className={() => resolveLinkClassName('/create-post')}>
+                <NavLink
+                  to="/create-post"
+                  onClick={handleNavigate}
+                  className={() => resolveLinkClassName("/create-post")}
+                >
                   Create post
                 </NavLink>
-                <NavLink to="/profile" onClick={handleNavigate} className={() => resolveLinkClassName('/profile')}>
+                <NavLink
+                  to="/ai-sommelier"
+                  onClick={handleNavigate}
+                  className={() => resolveLinkClassName("/ai-sommelier")}
+                >
+                  AI Sommelier
+                </NavLink>
+                <NavLink
+                  to="/profile"
+                  onClick={handleNavigate}
+                  className={() => resolveLinkClassName("/profile")}
+                >
                   Profile
                 </NavLink>
               </Nav>
             </Navbar.Collapse>
 
-            <img src="/beer-cheers.png" alt="BEERanking beers" className="app-navbar__logo" />
+            <img
+              src="/beer-cheers.png"
+              alt="BEERanking beers"
+              className="app-navbar__logo"
+            />
           </Container>
         </Navbar>
       </header>

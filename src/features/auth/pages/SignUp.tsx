@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { Alert, Button, Card, Form } from 'react-bootstrap';
+import { Button, Card, Form } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
+import FeedbackToast from '../../../shared/components/FeedbackToast';
 import { getAuthRedirectPath, persistAuthSession, signUp, signUpWithGoogle } from '../api/authApi';
 import { getGoogleIdToken } from '../api/googleAuth';
 import GoogleLogo from '../../../shared/assets/google-logo.svg';
@@ -108,7 +109,17 @@ function SignUp() {
   };
 
   return (
-    <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center app-auth-page px-3 py-4">
+    <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center app-auth-page px-3 py-4 position-relative">
+      {error ? (
+        <FeedbackToast
+          show
+          variant="danger"
+          title="Sign up failed"
+          message={error}
+          onClose={() => setError('')}
+        />
+      ) : null}
+
       <Card className="shadow-lg border-0" style={{ maxWidth: '500px', width: '100%' }}>
         <Card.Body className="p-4">
           <Button
@@ -125,8 +136,6 @@ function SignUp() {
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
-            {error ? <Alert variant="danger">{error}</Alert> : null}
-            
             <div className="mb-3">
               <Form.Label htmlFor="username">Username</Form.Label>
               <Form.Control

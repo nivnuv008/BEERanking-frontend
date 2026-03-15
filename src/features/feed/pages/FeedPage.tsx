@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Badge, Button, Card, Spinner } from 'react-bootstrap';
+import { Badge, Card, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { getAuthToken } from '../../auth/api/authApi';
+import FeedbackToast from '../../../shared/components/FeedbackToast';
 import { getFeedPosts, type FeedPost } from '../api/feedApi';
 import PostCard from '../components/PostCard';
 import { usePostLikeState } from '../hooks/usePostLikeState';
@@ -145,12 +146,15 @@ function FeedPage() {
         </div>
 
         {error ? (
-          <Alert variant="danger" className="mb-3 d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3">
-            <span>{error}</span>
-            <Button type="button" variant="warning" className="fw-semibold text-white border-0 align-self-start align-self-md-auto" onClick={handleRetry}>
-              Retry feed
-            </Button>
-          </Alert>
+          <FeedbackToast
+            show
+            variant="danger"
+            title="Feed unavailable"
+            message={error}
+            actionLabel="Retry feed"
+            onAction={handleRetry}
+            onClose={() => setError('')}
+          />
         ) : null}
 
         <div className="d-grid gap-3">

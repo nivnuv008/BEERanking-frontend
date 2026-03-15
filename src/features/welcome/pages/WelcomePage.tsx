@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { Alert, Button, Card, Form } from 'react-bootstrap';
+import { Button, Card, Form } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
+import FeedbackToast from '../../../shared/components/FeedbackToast';
 import '../styles/WelcomePage.css';
 import { getAuthRedirectPath, logout, persistAuthSession, signIn, signInWithGoogle } from '../../auth/api/authApi';
 import { getGoogleIdToken } from '../../auth/api/googleAuth';
@@ -98,7 +99,17 @@ function WelcomePage() {
   const showClearSession = Boolean(localStorage.getItem('token'));
 
   return (
-    <div className="container-fluid min-vh-100 welcome-page">
+    <div className="container-fluid min-vh-100 welcome-page position-relative">
+      {error ? (
+        <FeedbackToast
+          show
+          variant="danger"
+          title="Sign in failed"
+          message={error}
+          onClose={() => setError('')}
+        />
+      ) : null}
+
       <div className="row min-vh-100">
         <div className="col-lg-7 d-flex align-items-center justify-content-center welcome-page__hero">
           <div className="text-center welcome-page__hero-content">
@@ -117,8 +128,6 @@ function WelcomePage() {
             <h2 className="h3 fw-bold mb-4">Log into BEERanking</h2>
             
             <form onSubmit={handleSignIn}>
-              {error ? <Alert variant="danger">{error}</Alert> : null}
-
               <div className="mb-3">
                 <Form.Control
                   name="username"

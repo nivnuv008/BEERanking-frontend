@@ -58,11 +58,6 @@
   color: var(--profile-ink);
 }
 
-.profile-page__alert {
-  margin-bottom: 0.55rem;
-  border-radius: 18px;
-}
-
 .profile-card {
   height: 100%;
   padding: 0.9rem;

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { Alert, Badge, Button, Card, Form, Spinner } from 'react-bootstrap';
+import { Badge, Button, Card, Form, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
+import FeedbackToast from '../../../shared/components/FeedbackToast';
 import '../styles/ProfilePage.css';
 import { getStoredUser, logout } from '../../auth/api/authApi';
 import {
@@ -244,8 +245,16 @@ function ProfilePage() {
           </div>
         </div>
 
-        {error ? <Alert variant="danger" className="profile-page__alert">{error}</Alert> : null}
-        {successMessage ? <Alert variant="success" className="profile-page__alert">{successMessage}</Alert> : null}
+        {error ? (
+          <FeedbackToast
+            show
+            variant="danger"
+            title="Profile update failed"
+            message={error}
+            onClose={() => setError('')}
+          />
+        ) : null}
+        {successMessage ? <FeedbackToast show title="Profile updated" message={successMessage} onClose={() => setSuccessMessage('')} /> : null}
 
         <div className="row g-2 align-items-stretch">
           <div className="col-lg-4">

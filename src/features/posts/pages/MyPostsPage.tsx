@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { Alert, Badge, Button, Card, Form, Spinner } from 'react-bootstrap';
+import { Badge, Button, Card, Form, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { getAuthToken } from '../../auth/api/authApi';
 import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
 import { usePostLikeState } from '../../feed/hooks/usePostLikeState';
 import PostCard from '../../feed/components/PostCard';
+import FeedbackToast from '../../../shared/components/FeedbackToast';
 import type { FeedPost } from '../../feed/api/feedApi';
 import PostRatingField from '../components/PostRatingField';
 import ConfirmDialog from '../../../shared/components/ConfirmDialog';
@@ -386,15 +387,18 @@ function MyPostsPage() {
         </div>
 
         {error ? (
-          <Alert variant="danger" className="mb-3 d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3">
-            <span>{error}</span>
-            <Button type="button" variant="warning" className="fw-semibold text-white border-0 align-self-start align-self-md-auto" onClick={handleRetry}>
-              Retry
-            </Button>
-          </Alert>
+          <FeedbackToast
+            show
+            variant="danger"
+            title="Could not load posts"
+            message={error}
+            actionLabel="Retry"
+            onAction={handleRetry}
+            onClose={() => setError('')}
+          />
         ) : null}
 
-        {successMessage ? <Alert variant="success" className="my-posts-page__success mb-3">{successMessage}</Alert> : null}
+        {successMessage ? <FeedbackToast show title="Posts updated" message={successMessage} onClose={() => setSuccessMessage('')} /> : null}
 
         {editDraft && editedPost ? (
           <Card className="feed-surface-card my-posts-editor mb-3 border-0" aria-label="Edit post">

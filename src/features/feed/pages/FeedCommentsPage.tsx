@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Spinner from 'react-bootstrap/Spinner';
 import { getAuthToken } from '../../auth/api/authApi';
 import { getProfileImageUrl } from '../../profile/api/profileApi';
+import FeedbackToast from '../../../shared/components/FeedbackToast';
 import { createLocalComment, getFeedPostById, getPostComments, type FeedComment, type FeedPost } from '../api/feedApi';
 import PostCard from '../components/PostCard';
 import { usePostLikeState } from '../hooks/usePostLikeState';
@@ -143,7 +143,24 @@ function FeedCommentsPage() {
           </Button>
         </div>
 
-        {error ? <Alert variant="danger" className="mb-3">{error}</Alert> : null}
+        {error ? (
+          <FeedbackToast
+            show
+            variant="danger"
+            title="Comments unavailable"
+            message={error}
+            onClose={() => setError('')}
+          />
+        ) : null}
+
+        {commentMessage ? (
+          <FeedbackToast
+            show
+            title="Comment added"
+            message={commentMessage}
+            onClose={() => setCommentMessage('')}
+          />
+        ) : null}
 
         {post ? (
           <PostCard
@@ -184,8 +201,6 @@ function FeedCommentsPage() {
               Add comment
             </Button>
           </div>
-
-          {commentMessage ? <p className="small text-body-secondary mt-3 mb-0">{commentMessage}</p> : null}
           </Card.Body>
         </Card>
 

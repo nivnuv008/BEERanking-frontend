@@ -7,10 +7,6 @@
   color: var(--feed-accent-deep);
 }
 
-.my-posts-page__success {
-  border-radius: 24px;
-}
-
 .my-posts-editor {
   padding: 1.1rem;
 }

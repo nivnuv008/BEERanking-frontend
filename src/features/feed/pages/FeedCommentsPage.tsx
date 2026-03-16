@@ -9,7 +9,6 @@ import { getProfileImageUrl } from '../../profile/api/profileApi';
 import FeedbackToast from '../../../shared/components/FeedbackToast';
 import { createLocalComment, getFeedPostById, getPostComments, type FeedComment, type FeedPost } from '../api/feedApi';
 import PostCard from '../components/PostCard';
-import { usePostLikeState } from '../hooks/usePostLikeState';
 import '../styles/FeedPage.css';
 
 type FeedCommentsLocationState = {
@@ -48,7 +47,6 @@ function FeedCommentsPage() {
   const [commentText, setCommentText] = useState('');
   const [commentMessage, setCommentMessage] = useState('');
   const [error, setError] = useState('');
-  const { likeStateById, likeBusyId, syncPosts, toggleLike } = usePostLikeState(post ? [post] : []);
 
   useEffect(() => {
     if (!getAuthToken()) {
@@ -76,7 +74,6 @@ function FeedCommentsPage() {
         }
 
         setPost(resolvedPost);
-        syncPosts(resolvedPost ? [resolvedPost] : [], true);
         setComments(resolvedComments.items);
         setError('');
       } catch (loadError: unknown) {
@@ -162,13 +159,7 @@ function FeedCommentsPage() {
         ) : null}
 
         {post ? (
-          <PostCard
-            post={post}
-            liked={likeStateById[post._id]?.liked ?? Boolean(post.likedByCurrentUser)}
-            likeCount={likeStateById[post._id]?.likeCount ?? post.likeCount}
-            likeDisabled={likeBusyId === post._id}
-            onToggleLike={toggleLike}
-          />
+          <PostCard post={post} />
         ) : null}
 
         <Card className="feed-surface-card mb-3 border-0" aria-label="Add comment">

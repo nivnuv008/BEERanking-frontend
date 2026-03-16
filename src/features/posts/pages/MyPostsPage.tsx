@@ -4,7 +4,6 @@ import { Badge, Button, Card, Form, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { getAuthToken } from '../../auth/api/authApi';
 import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
-import { usePostLikeState } from '../../feed/hooks/usePostLikeState';
 import PostCard from '../../feed/components/PostCard';
 import FeedbackToast from '../../../shared/components/FeedbackToast';
 import type { FeedPost } from '../../feed/api/feedApi';
@@ -55,7 +54,6 @@ function MyPostsPage() {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
-  const { likeStateById, likeBusyId, syncPosts, toggleLike } = usePostLikeState(posts);
 
   useEffect(() => {
     if (!getAuthToken()) {
@@ -128,7 +126,6 @@ function MyPostsPage() {
       const result = await getMyPosts({ skip: targetSkip, limit: PAGE_SIZE });
 
       setPosts((currentPosts) => (reset ? result.items : mergePosts(currentPosts, result.items)));
-      syncPosts(result.items, reset);
       setNextSkip(result.nextSkip);
       setTotalPosts(result.total);
       setHasMore(result.hasMore);
@@ -442,7 +439,6 @@ function MyPostsPage() {
       });
 
       setPosts((currentPosts) => currentPosts.map((post) => (post._id === response.data._id ? response.data : post)));
-      syncPosts([response.data], false);
       clearEditor();
       setSuccessMessage(response.message || 'Post updated');
     } catch (saveError: unknown) {
@@ -558,10 +554,6 @@ function MyPostsPage() {
               <PostCard
                 key={post._id}
                 post={post}
-                liked={likeStateById[post._id]?.liked ?? Boolean(post.likedByCurrentUser)}
-                likeCount={likeStateById[post._id]?.likeCount ?? post.likeCount}
-                likeDisabled={likeBusyId === post._id}
-                onToggleLike={toggleLike}
                 onOpenComments={(selectedPost) => navigate(`/posts/${selectedPost._id}/comments`, {
                   state: {
                     post: selectedPost,

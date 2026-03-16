@@ -3,27 +3,13 @@ import { Badge, Card, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { getAuthToken } from "../../auth/api/authApi";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
-import { getFeedPosts, type FeedPost } from "../api/feedApi";
+import { mergeById } from "../../../shared/utils/mergeById";
+import type { FeedPost } from "../types/post";
+import { getFeedPosts } from "../api/feedApi";
 import PostCard from "../components/PostCard";
 import "../styles/FeedPage.css";
 
 const PAGE_SIZE = 4;
-
-function mergePosts(
-  currentPosts: FeedPost[],
-  nextPosts: FeedPost[],
-): FeedPost[] {
-  const existingIds = new Set(currentPosts.map((post) => post._id));
-  const merged = [...currentPosts];
-
-  nextPosts.forEach((post) => {
-    if (!existingIds.has(post._id)) {
-      merged.push(post);
-    }
-  });
-
-  return merged;
-}
 
 function FeedPage() {
   const navigate = useNavigate();
@@ -55,7 +41,7 @@ function FeedPage() {
       const result = await getFeedPosts({ skip: targetSkip, limit: PAGE_SIZE });
 
       setPosts((currentPosts) =>
-        reset ? result.items : mergePosts(currentPosts, result.items),
+        reset ? result.items : mergeById(currentPosts, result.items),
       );
       setNextSkip(result.nextSkip);
       setTotalPosts(result.total);

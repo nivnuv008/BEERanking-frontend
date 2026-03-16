@@ -7,33 +7,17 @@ import Spinner from "react-bootstrap/Spinner";
 import { getAuthToken } from "../../auth/api/authApi";
 import { getProfileImageUrl } from "../../profile/api/profileApi";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { mergeById } from "../../../shared/utils/mergeById";
+import type { FeedComment, FeedPost } from "../types/post";
 import {
   createPostComment,
   getFeedPostById,
   getPostComments,
-  type FeedComment,
-  type FeedPost,
 } from "../api/feedApi";
 import PostCard from "../components/PostCard";
 import "../styles/FeedPage.css";
 
 const PAGE_SIZE = 20;
-
-function mergeComments(
-  currentComments: FeedComment[],
-  nextComments: FeedComment[],
-): FeedComment[] {
-  const existingIds = new Set(currentComments.map((comment) => comment._id));
-  const merged = [...currentComments];
-
-  nextComments.forEach((comment) => {
-    if (!existingIds.has(comment._id)) {
-      merged.push(comment);
-    }
-  });
-
-  return merged;
-}
 
 type FeedCommentsLocationState = {
   post?: FeedPost;
@@ -104,7 +88,6 @@ function FeedCommentsPage() {
         }
 
         setPost(resolvedPost);
-        syncPosts(resolvedPost ? [resolvedPost] : [], true);
         setComments(initialComments.items);
         setNextSkip(initialComments.nextSkip);
         setTotalComments(initialComments.total);
@@ -138,7 +121,7 @@ function FeedCommentsPage() {
       });
 
       setComments((currentComments) =>
-        mergeComments(currentComments, result.items),
+        mergeById(currentComments, result.items),
       );
       setNextSkip(result.nextSkip);
       setTotalComments(result.total);

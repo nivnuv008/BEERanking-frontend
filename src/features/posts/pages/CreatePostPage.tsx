@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Badge from "react-bootstrap/Badge";
 import CameraCapture, {
   type CameraCaptureHandle,
-} from "../../camera/CameraCapture";
+} from "../../../shared/components/CameraCapture";
 import BeerSearchPicker from "../../../shared/components/BeerSearchPicker";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
 import { useBeerPickerData } from "../../../shared/hooks/useBeerPickerData";

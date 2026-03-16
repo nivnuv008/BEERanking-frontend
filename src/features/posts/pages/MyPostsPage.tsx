@@ -5,13 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { getAuthToken } from "../../auth/api/authApi";
 import CameraCapture, {
   type CameraCaptureHandle,
-} from "../../camera/CameraCapture";
-import PostCard from "../../feed/components/PostCard";
+} from "../../../shared/components/CameraCapture";
+import PostCard from "../components/PostCard";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
-import type { FeedPost } from "../../feed/api/feedApi";
+import { mergeById } from "../../../shared/utils/mergeById";
+import type { FeedPost } from "../types/post";
 import PostRatingField from "../components/PostRatingField";
 import ConfirmDialog from "../../../shared/components/ConfirmDialog";
-import "../../feed/styles/FeedPage.css";
+import "../styles/FeedPage.css";
 import { deletePost, getMyPosts, updatePost } from "../api/postApi";
 import "../styles/MyPostsPage.css";
 
@@ -25,22 +26,6 @@ type EditDraft = {
   imageFile: File | null;
   imagePreview: string;
 };
-
-function mergePosts(
-  currentPosts: FeedPost[],
-  nextPosts: FeedPost[],
-): FeedPost[] {
-  const existingIds = new Set(currentPosts.map((post) => post._id));
-  const merged = [...currentPosts];
-
-  nextPosts.forEach((post) => {
-    if (!existingIds.has(post._id)) {
-      merged.push(post);
-    }
-  });
-
-  return merged;
-}
 
 function MyPostsPage() {
   const navigate = useNavigate();
@@ -133,7 +118,7 @@ function MyPostsPage() {
       const result = await getMyPosts({ skip: targetSkip, limit: PAGE_SIZE });
 
       setPosts((currentPosts) =>
-        reset ? result.items : mergePosts(currentPosts, result.items),
+        reset ? result.items : mergeById(currentPosts, result.items),
       );
       setNextSkip(result.nextSkip);
       setTotalPosts(result.total);

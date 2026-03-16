@@ -1,6 +1,6 @@
 import { API_BASE_URL, parseJsonResponse } from "../../../shared/api/apiClient";
+import type { FeedPost } from "../types/post";
 import { fetchWithAuth } from "../../auth/api/authApi";
-import type { FeedPost } from "../../feed/api/feedApi";
 
 const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || "";
 

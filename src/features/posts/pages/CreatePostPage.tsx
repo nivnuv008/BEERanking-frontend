@@ -3,11 +3,13 @@ import type { ChangeEvent, DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Badge from 'react-bootstrap/Badge';
 import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
+import BeerSearchPicker from '../../../shared/components/BeerSearchPicker';
 import FeedbackToast from '../../../shared/components/FeedbackToast';
+import { useBeerPickerData } from '../../../shared/hooks/useBeerPickerData';
 import PostRatingField from '../components/PostRatingField';
 import '../styles/CreatePostPage.css';
 import { getAuthToken } from '../../auth/api/authApi';
-import { searchBeers, type Beer } from '../../profile/api/profileApi';
+import { type Beer } from '../../../shared/api/beerApi';
 import { createPost } from '../api/postApi';
 
 const DESCRIPTION_LIMIT = 1000;
@@ -18,21 +20,37 @@ function normalizeText(value: string): string {
 
 function CreatePostPage() {
   const navigate = useNavigate();
-  const searchTimeoutRef = useRef<number | null>(null);
   const previewUrlRef = useRef<string | null>(null);
   const cameraCaptureRef = useRef<CameraCaptureHandle | null>(null);
-  const [beerQuery, setBeerQuery] = useState('');
-  const [beerResults, setBeerResults] = useState<Beer[]>([]);
+  const beerBlurRef = useRef<number | null>(null);
   const [selectedBeer, setSelectedBeer] = useState<Beer | null>(null);
+  const [isBeerInputFocused, setIsBeerInputFocused] = useState(false);
   const [rating, setRating] = useState(4);
   const [description, setDescription] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [beerPickerError, setBeerPickerError] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
+  const {
+    query: beerQuery,
+    setQuery: setBeerQuery,
+    searchResults: beerResults,
+    displayedBeers,
+    isSearching,
+    isLoadingMore,
+    hasActiveQuery,
+    ensureCatalogLoaded,
+    onScroll: handleBeerResultsScroll,
+    reset: resetBeerPicker,
+  } = useBeerPickerData({
+    debounceMs: 300,
+    preloadCatalog: false,
+    onError: setBeerPickerError,
+  });
 
   useEffect(() => {
     if (!getAuthToken()) {
@@ -42,8 +60,8 @@ function CreatePostPage() {
 
   useEffect(() => {
     return () => {
-      if (searchTimeoutRef.current) {
-        window.clearTimeout(searchTimeoutRef.current);
+      if (beerBlurRef.current) {
+        window.clearTimeout(beerBlurRef.current);
       }
 
       if (previewUrlRef.current) {
@@ -51,40 +69,6 @@ function CreatePostPage() {
       }
     };
   }, []);
-
-  useEffect(() => {
-    const normalizedQuery = beerQuery.trim();
-
-    if (!normalizedQuery) {
-      setBeerResults([]);
-      setIsSearching(false);
-      return;
-    }
-
-    if (searchTimeoutRef.current) {
-      window.clearTimeout(searchTimeoutRef.current);
-    }
-
-    searchTimeoutRef.current = window.setTimeout(async () => {
-      try {
-        setIsSearching(true);
-        setError('');
-        const results = await searchBeers(normalizedQuery);
-        setBeerResults(results);
-      } catch (searchError: unknown) {
-        const message = searchError instanceof Error ? searchError.message : 'Beer search failed';
-        setError(message);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 300);
-
-    return () => {
-      if (searchTimeoutRef.current) {
-        window.clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, [beerQuery]);
 
   const resetImagePreview = () => {
     if (previewUrlRef.current) {
@@ -141,21 +125,37 @@ function CreatePostPage() {
   const handleSelectBeer = (beer: Beer) => {
     setSelectedBeer(beer);
     setBeerQuery(beer.name);
-    setBeerResults([]);
+    setIsBeerInputFocused(false);
+    setBeerPickerError('');
     setError('');
   };
 
   const handleClearBeer = () => {
     setSelectedBeer(null);
-    setBeerQuery('');
-    setBeerResults([]);
+    resetBeerPicker();
+    setBeerPickerError('');
+  };
+
+  const handleBeerInputFocus = () => {
+    if (beerBlurRef.current) {
+      window.clearTimeout(beerBlurRef.current);
+    }
+    setBeerPickerError('');
+    ensureCatalogLoaded();
+    setIsBeerInputFocused(true);
+  };
+
+  const handleBeerInputBlur = () => {
+    beerBlurRef.current = window.setTimeout(() => {
+      setIsBeerInputFocused(false);
+    }, 150);
   };
 
   const handleResetForm = () => {
     cameraCaptureRef.current?.closeCamera();
     setSelectedBeer(null);
-    setBeerQuery('');
-    setBeerResults([]);
+    resetBeerPicker();
+    setBeerPickerError('');
     setRating(4);
     setDescription('');
     setImageFile(null);
@@ -175,6 +175,10 @@ function CreatePostPage() {
   const validateForm = (_beer: Beer | null) => {
     if (!imageFile) {
       return 'Image file is required';
+    }
+
+    if (!_beer) {
+      return 'Please select a beer for this post';
     }
 
     if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
@@ -210,8 +214,7 @@ function CreatePostPage() {
       const response = await createPost({
         imageFile: imageFile!,
         rating,
-        beerId: '69b2fcae7f629d1c03e0be76',
-        // beerId: beerToSubmit?._id,
+        beerId: beerToSubmit?._id ?? null,
         description
       });
 
@@ -226,7 +229,7 @@ function CreatePostPage() {
   };
 
   const descriptionLength = description.trimStart().length;
-  const showSearchResults = beerQuery.trim().length > 0 && beerQuery.trim() !== selectedBeer?.name;
+  const showBeerDropdown = isBeerInputFocused && !selectedBeer;
   const submitValidationMessage = validateForm(selectedBeer ?? getMatchedBeer());
 
   return (
@@ -359,31 +362,38 @@ function CreatePostPage() {
               <div className="row g-3">
                 <div className="col-lg-7">
                   <div className="create-post-form__section h-100">
-                    <p className="create-post-form__todo">
-                      TODO: when the beer search API is ready, make this field required and submit the selected beer id.
-                    </p>
-                    <label htmlFor="beer-query" className="create-post-form__label">
-                      Beer (optional for now)
-                    </label>
-                    <div className="d-flex flex-column flex-md-row gap-3">
-                      <input
-                        id="beer-query"
-                        type="text"
-                        className="form-control create-post-search__input"
-                        placeholder="Search beer or brewery"
-                        value={beerQuery}
-                        onChange={(event) => {
-                          setBeerQuery(event.target.value);
-                          setSuccessMessage('');
-                        }}
-                        autoComplete="off"
-                      />
-                      {selectedBeer ? (
-                        <button type="button" className="btn btn-outline-secondary rounded-4 px-3" onClick={handleClearBeer}>
-                          Clear
-                        </button>
-                      ) : null}
-                    </div>
+                    <BeerSearchPicker
+                      inputId="beer-query"
+                      label="Beer *"
+                      query={beerQuery}
+                      placeholder="Search beer or brewery"
+                      onQueryChange={(value) => {
+                        setBeerQuery(value);
+                        setBeerPickerError('');
+                        setSuccessMessage('');
+                      }}
+                      onFocus={handleBeerInputFocus}
+                      onBlur={handleBeerInputBlur}
+                      isOpen={showBeerDropdown}
+                      beers={displayedBeers}
+                      hasActiveQuery={hasActiveQuery}
+                      isSearching={isSearching}
+                      isLoadingMore={isLoadingMore}
+                      minCharsText="Type at least 2 characters to search beers."
+                      onScroll={handleBeerResultsScroll}
+                      onSelect={handleSelectBeer}
+                      renderMeta={(beer) => `${beer.brewery} · ${beer.style} · ${beer.abv}% ABV`}
+                      showClearButton={Boolean(selectedBeer)}
+                      onClear={handleClearBeer}
+                      inputRowClassName="d-flex flex-column flex-md-row gap-3"
+                      inputClassName="form-control create-post-search__input"
+                      clearButtonClassName="btn btn-outline-secondary rounded-4 px-3"
+                      resultsClassName="create-post-search__results"
+                      resultClassName="create-post-search-result"
+                      helperClassName="create-post-form__helper"
+                    />
+
+                    {beerPickerError ? <p className="create-post-form__helper">{beerPickerError}</p> : null}
 
                     {selectedBeer ? (
                       <div className="selected-beer-card">
@@ -396,35 +406,6 @@ function CreatePostPage() {
                         <span className="selected-beer-card__status">Selected</span>
                       </div>
                     ) : null}
-
-                    {showSearchResults ? (
-                      <div className="create-post-search__results" aria-live="polite">
-                        {isSearching ? <p className="create-post-form__helper">Searching beers...</p> : null}
-                        {!isSearching && beerResults.length === 0 ? (
-                          <p className="create-post-form__helper">No beers matched this search.</p>
-                        ) : null}
-                        {!isSearching
-                          ? beerResults.map((beer) => (
-                              <button
-                                key={beer._id}
-                                type="button"
-                                className={`create-post-search-result${selectedBeer?._id === beer._id ? ' create-post-search-result--active' : ''}`}
-                                onClick={() => handleSelectBeer(beer)}
-                              >
-                                <span>
-                                  <strong>{beer.name}</strong>
-                                  <small>
-                                    {beer.brewery} · {beer.style} · {beer.abv}% ABV
-                                  </small>
-                                </span>
-                                <span>Select</span>
-                              </button>
-                            ))
-                          : null}
-                      </div>
-                    ) : (
-                      <p className="create-post-form__helper">You can skip this for now until the beer API flow is ready.</p>
-                    )}
                   </div>
                 </div>
 

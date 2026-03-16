@@ -3,15 +3,16 @@ import type { ChangeEvent } from 'react';
 import { Badge, Button, Card, Form, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
+import BeerSearchPicker from '../../../shared/components/BeerSearchPicker';
 import FeedbackToast from '../../../shared/components/FeedbackToast';
+import type { Beer } from '../../../shared/api/beerApi';
+import { useBeerPickerData } from '../../../shared/hooks/useBeerPickerData';
 import '../styles/ProfilePage.css';
 import { getStoredUser, logout } from '../../auth/api/authApi';
 import {
   getCurrentUserProfile,
   getProfileImageUrl,
-  searchBeers,
   updateCurrentUserProfile,
-  type Beer,
   type UserProfile
 } from '../api/profileApi';
 
@@ -22,10 +23,12 @@ type EditableProfile = {
   previewUrl: string | null;
 };
 
+const MAX_FAVORITE_BEERS = 3;
+
 function ProfilePage() {
   const navigate = useNavigate();
-  const searchTimeoutRef = useRef<number | null>(null);
   const cameraCaptureRef = useRef<CameraCaptureHandle | null>(null);
+  const beerBlurRef = useRef<number | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(() => getStoredUser<UserProfile>());
   const [draft, setDraft] = useState<EditableProfile>({
     username: '',
@@ -33,14 +36,31 @@ function ProfilePage() {
     profilePhotoFile: null,
     previewUrl: null
   });
-  const [beerQuery, setBeerQuery] = useState('');
-  const [beerResults, setBeerResults] = useState<Beer[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
+  const [isBeerInputFocused, setIsBeerInputFocused] = useState(false);
+  const [beerPickerError, setBeerPickerError] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
+  const {
+    query: beerQuery,
+    setQuery: setBeerQuery,
+    searchResults: beerResults,
+    displayedBeers,
+    isSearching,
+    isLoadingMore,
+    hasActiveQuery,
+    ensureCatalogLoaded,
+    onScroll: handleBeerResultsScroll,
+    reset: resetBeerPicker,
+  } = useBeerPickerData({
+    enabled: isEditing,
+    debounceMs: 350,
+    preloadCatalog: true,
+    onError: setBeerPickerError,
+  });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -80,39 +100,20 @@ function ProfilePage() {
     });
   }, [profile]);
 
-  useEffect(() => {
-    if (!isEditing) {
-      return;
+  const handleBeerInputFocus = () => {
+    if (beerBlurRef.current) {
+      window.clearTimeout(beerBlurRef.current);
     }
+    setBeerPickerError('');
+    ensureCatalogLoaded();
+    setIsBeerInputFocused(true);
+  };
 
-    if (!beerQuery.trim()) {
-      setBeerResults([]);
-      return;
-    }
-
-    if (searchTimeoutRef.current) {
-      window.clearTimeout(searchTimeoutRef.current);
-    }
-
-    searchTimeoutRef.current = window.setTimeout(async () => {
-      try {
-        setIsSearching(true);
-        const results = await searchBeers(beerQuery);
-        setBeerResults(results);
-      } catch (searchError: unknown) {
-        const message = searchError instanceof Error ? searchError.message : 'Beer search failed';
-        setError(message);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 350);
-
-    return () => {
-      if (searchTimeoutRef.current) {
-        window.clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, [beerQuery, isEditing]);
+  const handleBeerInputBlur = () => {
+    beerBlurRef.current = window.setTimeout(() => {
+      setIsBeerInputFocused(false);
+    }, 150);
+  };
 
   const handleEditToggle = () => {
     if (!profile) {
@@ -123,8 +124,8 @@ function ProfilePage() {
 
     setSuccessMessage('');
     setError('');
-    setBeerQuery('');
-    setBeerResults([]);
+    setBeerPickerError('');
+    resetBeerPicker();
     setDraft({
       username: profile.username,
       favoriteBeers: profile.favoriteBeers,
@@ -143,7 +144,7 @@ function ProfilePage() {
     setDraft((current) => {
       const alreadySelected = current.favoriteBeers.some((favoriteBeer) => favoriteBeer._id === beer._id);
 
-      if (alreadySelected) {
+      if (alreadySelected || current.favoriteBeers.length >= MAX_FAVORITE_BEERS) {
         return current;
       }
 
@@ -185,8 +186,8 @@ function ProfilePage() {
       cameraCaptureRef.current?.closeCamera();
       setProfile(updatedProfile);
       setIsEditing(false);
-      setBeerQuery('');
-      setBeerResults([]);
+      setBeerPickerError('');
+      resetBeerPicker();
       setSuccessMessage('Profile updated successfully');
     } catch (saveError: unknown) {
       const message = saveError instanceof Error ? saveError.message : 'Failed to update profile';
@@ -202,6 +203,7 @@ function ProfilePage() {
   };
 
   const visibleProfileImage = isEditing ? draft.previewUrl : getProfileImageUrl(profile?.profilePic);
+  const isAtFavoriteLimit = draft.favoriteBeers.length >= MAX_FAVORITE_BEERS;
 
   if (isLoading) {
     return (
@@ -361,47 +363,62 @@ function ProfilePage() {
                   <h2 className="profile-card__section-title">Your current lineup</h2>
                 </div>
                 <Badge pill bg="warning" text="dark" className="px-3 py-2 fs-6 fw-semibold profile-card__count-badge">
-                  {draft.favoriteBeers.length} selected
+                  {draft.favoriteBeers.length}/{MAX_FAVORITE_BEERS} selected
                 </Badge>
               </div>
 
               {isEditing ? (
                 <div className="mb-2">
-                  <Form.Control
-                    type="text"
-                    value={beerQuery}
-                    onChange={(event) => setBeerQuery(event.target.value)}
-                    className="profile-card__search"
+                  <BeerSearchPicker
+                    inputId="profile-beer-query"
+                    query={beerQuery}
                     placeholder="Search beers to add to favorites"
-                  />
-
-                  <div className="profile-card__search-results">
-                    {isSearching ? <Form.Text className="profile-card__helper d-block">Searching beer catalog...</Form.Text> : null}
-                    {!isSearching && beerQuery.trim() && beerResults.length === 0 ? (
-                      <Form.Text className="profile-card__helper d-block">No beers found for this search.</Form.Text>
-                    ) : null}
-
-                    {beerResults.map((beer) => {
+                    onQueryChange={(value) => {
+                      setBeerPickerError('');
+                      setBeerQuery(value);
+                    }}
+                    onFocus={handleBeerInputFocus}
+                    onBlur={handleBeerInputBlur}
+                    isOpen={isBeerInputFocused}
+                    beers={displayedBeers}
+                    hasActiveQuery={hasActiveQuery}
+                    isSearching={isSearching}
+                    isLoadingMore={isLoadingMore}
+                    minCharsText="Type at least 2 characters to search beers."
+                    onScroll={handleBeerResultsScroll}
+                    onSelect={addFavoriteBeer}
+                    renderMeta={(beer) => `${beer.brewery} • ${beer.style}`}
+                    isResultDisabled={(beer) =>
+                      isAtFavoriteLimit || draft.favoriteBeers.some((favoriteBeer) => favoriteBeer._id === beer._id)
+                    }
+                    getActionLabel={(beer) => {
                       const isSelected = draft.favoriteBeers.some((favoriteBeer) => favoriteBeer._id === beer._id);
 
-                      return (
-                        <Button
-                          key={beer._id}
-                          type="button"
-                          variant="light"
-                          className="profile-card__search-result text-start"
-                          onClick={() => addFavoriteBeer(beer)}
-                          disabled={isSelected}
-                        >
-                          <span>
-                            <strong>{beer.name}</strong>
-                            <small>{beer.brewery} • {beer.style}</small>
-                          </span>
-                          <span>{isSelected ? 'Added' : 'Add'}</span>
-                        </Button>
-                      );
-                    })}
-                  </div>
+                      if (isSelected) {
+                        return 'Added';
+                      }
+
+                      if (isAtFavoriteLimit) {
+                        return 'Limit reached';
+                      }
+
+                      return 'Add';
+                    }}
+                    searchingText="Searching beer catalog..."
+                    noResultsText="No beers found for this search."
+                    preResultsContent={
+                      <>
+                        {isAtFavoriteLimit ? (
+                          <p className="profile-card__helper d-block">You already have 3 favorite beers.</p>
+                        ) : null}
+                        {beerPickerError ? <p className="profile-card__helper d-block">{beerPickerError}</p> : null}
+                      </>
+                    }
+                    inputClassName="form-control profile-card__search"
+                    resultsClassName="profile-card__search-results"
+                    resultClassName="btn btn-light profile-card__search-result text-start"
+                    helperClassName="profile-card__helper d-block"
+                  />
                 </div>
               ) : null}
 

@@ -71,6 +71,8 @@ export type FeedPageResult = {
 export type FeedCommentsResult = {
   items: FeedComment[];
   total: number;
+  nextSkip: number;
+  hasMore: boolean;
 };
 
 export type FeedPagingParams = {
@@ -154,13 +156,22 @@ export async function togglePostLike(postId: string): Promise<ToggleLikeResponse
   return parseJsonResponse<ToggleLikeResponse>(response, 'Failed to update like');
 }
 
-export async function getPostComments(postId: string): Promise<FeedCommentsResult> {
-  const response = await fetch(`${API_BASE_URL}/posts/${encodeURIComponent(postId)}/comments?page=1&limit=20`);
+export async function getPostComments(postId: string, params: FeedPagingParams = {}): Promise<FeedCommentsResult> {
+  const skip = Math.max(0, params.skip ?? 0);
+  const limit = Math.max(1, params.limit ?? 20);
+  const page = Math.floor(skip / limit) + 1;
+
+  const response = await fetch(`${API_BASE_URL}/posts/${encodeURIComponent(postId)}/comments?page=${page}&limit=${limit}`);
   const payload = await parseJsonResponse<BackendPaginatedResponse<FeedComment>>(response, 'Failed to load comments');
+  const items = Array.isArray(payload.data) ? payload.data : [];
+  const total = payload.pagination?.total ?? items.length;
+  const nextSkip = skip + items.length;
 
   return {
-    items: Array.isArray(payload.data) ? payload.data : [],
-    total: payload.pagination?.total ?? 0,
+    items,
+    total,
+    nextSkip,
+    hasMore: nextSkip < total,
   };
 }
 

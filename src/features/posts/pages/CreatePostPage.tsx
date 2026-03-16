@@ -210,7 +210,7 @@ function CreatePostPage() {
       const response = await createPost({
         imageFile: imageFile!,
         rating,
-        beerId: '69b2fcae7f629d1c03e0be76',
+        beerId: '69b44a42a1d380bbcbe02cbe',
         // beerId: beerToSubmit?._id,
         description
       });

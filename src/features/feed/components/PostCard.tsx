@@ -1,15 +1,12 @@
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import Button from 'react-bootstrap/Button';
 import { getProfileImageUrl } from '../../profile/api/profileApi';
-import type { FeedPost } from '../api/feedApi';
+import { togglePostLike, type FeedPost } from '../api/feedApi';
 
 type PostCardProps = {
   post: FeedPost;
-  liked: boolean;
-  likeCount: number;
-  likeDisabled?: boolean;
   commentDisabled?: boolean;
-  onToggleLike?: (post: FeedPost) => void;
   onOpenComments?: (post: FeedPost) => void;
   footerActions?: ReactNode;
 };
@@ -46,8 +43,42 @@ function CommentIcon() {
   );
 }
 
-function PostCard({ post, liked, likeCount, likeDisabled = false, commentDisabled = false, onToggleLike, onOpenComments, footerActions }: PostCardProps) {
+function PostCard({ post, commentDisabled = false, onOpenComments, footerActions }: PostCardProps) {
   const avatarUrl = getProfileImageUrl(post.user.profilePic);
+  const [liked, setLiked] = useState(Boolean(post.likedByCurrentUser));
+  const [likeCount, setLikeCount] = useState(post.likeCount);
+  const [isLikeBusy, setIsLikeBusy] = useState(false);
+
+  useEffect(() => {
+    setLiked(Boolean(post.likedByCurrentUser));
+    setLikeCount(post.likeCount);
+  }, [post._id, post.likedByCurrentUser, post.likeCount]);
+
+  const handleToggleLike = async () => {
+    if (isLikeBusy) {
+      return;
+    }
+
+    const previousLiked = liked;
+    const previousLikeCount = likeCount;
+    const optimisticLiked = !previousLiked;
+    const optimisticLikeCount = Math.max(0, previousLikeCount + (optimisticLiked ? 1 : -1));
+
+    setIsLikeBusy(true);
+    setLiked(optimisticLiked);
+    setLikeCount(optimisticLikeCount);
+
+    try {
+      const response = await togglePostLike(post._id);
+      setLiked(response.liked);
+      setLikeCount(response.likeCount);
+    } catch {
+      setLiked(previousLiked);
+      setLikeCount(previousLikeCount);
+    } finally {
+      setIsLikeBusy(false);
+    }
+  };
 
   return (
     <article className="feed-card">
@@ -105,22 +136,20 @@ function PostCard({ post, liked, likeCount, likeDisabled = false, commentDisable
               <p className="feed-card__description">{post.description}</p>
             </section>
 
-            {(onToggleLike || onOpenComments || footerActions) ? (
+            {(onOpenComments || footerActions) ? (
               <div className="feed-card__footer d-flex flex-wrap align-items-center justify-content-between gap-3 mt-auto pt-3">
                 <div className="d-flex flex-wrap gap-3">
-                  {onToggleLike ? (
-                    <Button
-                      type="button"
-                      variant={liked ? 'danger' : 'outline-secondary'}
-                      className={`feed-card__action-button rounded-pill px-4 fw-semibold${liked ? ' feed-card__action--liked' : ''}`}
-                      onClick={() => onToggleLike(post)}
-                      disabled={likeDisabled}
-                      aria-pressed={liked}
-                    >
-                      <HeartIcon />
-                      <span>{liked ? 'Liked' : 'Like'} · {likeCount}</span>
-                    </Button>
-                  ) : null}
+                  <Button
+                    type="button"
+                    variant={liked ? 'danger' : 'outline-secondary'}
+                    className={`feed-card__action-button rounded-pill px-4 fw-semibold${liked ? ' feed-card__action--liked' : ''}`}
+                    onClick={handleToggleLike}
+                    disabled={isLikeBusy}
+                    aria-pressed={liked}
+                  >
+                    <HeartIcon />
+                    <span>{liked ? 'Liked' : 'Like'} · {likeCount}</span>
+                  </Button>
 
                   {onOpenComments ? (
                     <Button type="button" variant="outline-secondary" className="feed-card__action-button rounded-pill px-4 fw-semibold" onClick={() => onOpenComments(post)} disabled={commentDisabled}>

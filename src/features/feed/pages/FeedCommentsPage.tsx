@@ -164,7 +164,7 @@ function FeedCommentsPage() {
         {post ? (
           <PostCard
             post={post}
-            liked={likeStateById[post._id]?.liked ?? false}
+            liked={likeStateById[post._id]?.liked ?? Boolean(post.likedByCurrentUser)}
             likeCount={likeStateById[post._id]?.likeCount ?? post.likeCount}
             likeDisabled={likeBusyId === post._id}
             onToggleLike={toggleLike}

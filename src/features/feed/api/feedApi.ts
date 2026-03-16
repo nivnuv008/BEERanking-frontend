@@ -26,9 +26,9 @@ export type FeedPost = {
   updatedAt?: string;
   user: FeedUser;
   beer?: FeedBeer | null;
-  likes?: Array<string | { _id?: string | null }>;
   likeCount: number;
   commentCount: number;
+  likedByCurrentUser?: boolean;
 };
 
 export type FeedComment = {
@@ -74,8 +74,6 @@ export type FeedPagingParams = {
   limit?: number;
 };
 
-// TODO: Remove the frontend liked-state fallback after the backend feed endpoints
-// return either +likes or likedByCurrentUser for authenticated post reads.
 async function fetchFeedResource(input: string): Promise<Response> {
   return getAuthToken() ? fetchWithAuth(input) : fetch(input);
 }
@@ -129,6 +127,7 @@ function normalizeFeedPost(post: FeedPost): FeedPost {
     image: resolveBackendAssetUrl(post.image),
     likeCount: Number.isFinite(post.likeCount) ? post.likeCount : 0,
     commentCount: Number.isFinite(post.commentCount) ? post.commentCount : 0,
+    likedByCurrentUser: Boolean(post.likedByCurrentUser),
   };
 }
 

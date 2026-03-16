@@ -151,7 +151,7 @@ function FeedPage() {
 
         <div className="d-grid gap-3">
           {posts.map((post) => {
-            const currentLikeState = likeStateById[post._id] ?? { liked: false, likeCount: post.likeCount };
+            const currentLikeState = likeStateById[post._id] ?? { liked: Boolean(post.likedByCurrentUser), likeCount: post.likeCount };
 
             return (
               <PostCard

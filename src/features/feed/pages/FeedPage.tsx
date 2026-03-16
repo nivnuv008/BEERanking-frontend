@@ -1,15 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
-import { Badge, Card, Spinner } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import { getAuthToken } from '../../auth/api/authApi';
-import FeedbackToast from '../../../shared/components/FeedbackToast';
-import { getFeedPosts, type FeedPost } from '../api/feedApi';
-import PostCard from '../components/PostCard';
-import '../styles/FeedPage.css';
+import { useEffect, useRef, useState } from "react";
+import { Badge, Card, Spinner } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { getAuthToken } from "../../auth/api/authApi";
+import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { getFeedPosts, type FeedPost } from "../api/feedApi";
+import PostCard from "../components/PostCard";
+import "../styles/FeedPage.css";
 
 const PAGE_SIZE = 4;
 
-function mergePosts(currentPosts: FeedPost[], nextPosts: FeedPost[]): FeedPost[] {
+function mergePosts(
+  currentPosts: FeedPost[],
+  nextPosts: FeedPost[],
+): FeedPost[] {
   const existingIds = new Set(currentPosts.map((post) => post._id));
   const merged = [...currentPosts];
 
@@ -31,11 +34,11 @@ function FeedPage() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!getAuthToken()) {
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     }
   }, [navigate]);
 
@@ -51,13 +54,16 @@ function FeedPage() {
 
       const result = await getFeedPosts({ skip: targetSkip, limit: PAGE_SIZE });
 
-      setPosts((currentPosts) => (reset ? result.items : mergePosts(currentPosts, result.items)));
+      setPosts((currentPosts) =>
+        reset ? result.items : mergePosts(currentPosts, result.items),
+      );
       setNextSkip(result.nextSkip);
       setTotalPosts(result.total);
       setHasMore(result.hasMore);
-      setError('');
+      setError("");
     } catch (loadError: unknown) {
-      const message = loadError instanceof Error ? loadError.message : 'Failed to load feed';
+      const message =
+        loadError instanceof Error ? loadError.message : "Failed to load feed";
       setError(message);
     } finally {
       setIsInitialLoading(false);
@@ -67,7 +73,7 @@ function FeedPage() {
 
   useEffect(() => {
     void loadPosts(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -77,7 +83,7 @@ function FeedPage() {
       return;
     }
 
-    const root = document.querySelector('.app-shell__content');
+    const root = document.querySelector(".app-shell__content");
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -89,7 +95,7 @@ function FeedPage() {
       },
       {
         root,
-        rootMargin: '0px 0px 260px 0px',
+        rootMargin: "0px 0px 260px 0px",
         threshold: 0,
       },
     );
@@ -131,8 +137,7 @@ function FeedPage() {
           </div>
         </div>
 
-        <div className="d-flex flex-wrap gap-2 mb-3">
-        </div>
+        <div className="d-flex flex-wrap gap-2 mb-3"></div>
 
         {error ? (
           <FeedbackToast
@@ -142,7 +147,7 @@ function FeedPage() {
             message={error}
             actionLabel="Retry feed"
             onAction={handleRetry}
-            onClose={() => setError('')}
+            onClose={() => setError("")}
           />
         ) : null}
 
@@ -151,13 +156,15 @@ function FeedPage() {
             <PostCard
               key={post._id}
               post={post}
-              onOpenComments={(selectedPost) => navigate(`/posts/${selectedPost._id}/comments`, {
-                state: {
-                  post: selectedPost,
-                  returnTo: '/feed',
-                  returnLabel: 'Back to feed',
-                },
-              })}
+              onOpenComments={(selectedPost) =>
+                navigate(`/posts/${selectedPost._id}/comments`, {
+                  state: {
+                    post: selectedPost,
+                    returnTo: "/feed",
+                    returnLabel: "Back to feed",
+                  },
+                })
+              }
             />
           ))}
         </div>
@@ -179,7 +186,11 @@ function FeedPage() {
           ) : null}
         </div>
 
-        <div ref={sentinelRef} className="feed-page__sentinel" aria-hidden="true" />
+        <div
+          ref={sentinelRef}
+          className="feed-page__sentinel"
+          aria-hidden="true"
+        />
       </div>
     </section>
   );

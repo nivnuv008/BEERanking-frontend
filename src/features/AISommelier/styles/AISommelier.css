@@ -16,7 +16,7 @@
   border-radius: 30px;
   background: var(--app-page-background);
   color: var(--sommelier-ink);
-  font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
   display: flex;
   flex-direction: column;
 }
@@ -117,12 +117,18 @@
   padding: 0.38rem 0.9rem;
   border: none;
   border-radius: 0 12px 12px 0 !important;
-  background: linear-gradient(135deg, var(--sommelier-accent), var(--sommelier-accent-deep));
+  background: linear-gradient(
+    135deg,
+    var(--sommelier-accent),
+    var(--sommelier-accent-deep)
+  );
   color: #fff;
   font-size: 0.93rem;
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.18s, transform 0.12s;
+  transition:
+    opacity 0.18s,
+    transform 0.12s;
 }
 
 .sommelier-prompt-card__btn:hover:not(:disabled) {
@@ -194,17 +200,29 @@
 }
 
 .sommelier-analysis-card__badge--single {
-  background: linear-gradient(135deg, rgba(184, 84, 24, 0.16), rgba(255, 217, 184, 0.7)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(184, 84, 24, 0.16),
+    rgba(255, 217, 184, 0.7)
+  ) !important;
   color: var(--sommelier-accent-deep) !important;
 }
 
 .sommelier-analysis-card__badge--multiple {
-  background: linear-gradient(135deg, rgba(101, 152, 56, 0.16), rgba(200, 230, 160, 0.6)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(101, 152, 56, 0.16),
+    rgba(200, 230, 160, 0.6)
+  ) !important;
   color: #3a6e18 !important;
 }
 
 .sommelier-analysis-card__badge--alternatives {
-  background: linear-gradient(135deg, rgba(56, 120, 180, 0.16), rgba(180, 215, 245, 0.6)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(56, 120, 180, 0.16),
+    rgba(180, 215, 245, 0.6)
+  ) !important;
   color: #1a4e8a !important;
 }
 
@@ -223,7 +241,10 @@
 /* ─── Beer grid ──────────────────────────────────────── */
 .sommelier-beers-grid {
   display: grid;
-  grid-template-columns: repeat(var(--sommelier-beer-columns, 3), minmax(0, 1fr));
+  grid-template-columns: repeat(
+    var(--sommelier-beer-columns, 3),
+    minmax(0, 1fr)
+  );
   gap: 0.65rem;
 }
 
@@ -241,7 +262,9 @@
   border-radius: 16px;
   backdrop-filter: blur(14px);
   box-shadow: 0 8px 24px rgba(74, 42, 17, 0.08);
-  transition: transform 0.14s, box-shadow 0.14s;
+  transition:
+    transform 0.14s,
+    box-shadow 0.14s;
 }
 
 .sommelier-beer-card:hover {
@@ -251,7 +274,9 @@
 
 .sommelier-beer-card--top-pick {
   border-color: rgba(184, 84, 24, 0.35);
-  box-shadow: 0 8px 24px rgba(184, 84, 24, 0.15), inset 0 0 0 1px rgba(184, 84, 24, 0.1);
+  box-shadow:
+    0 8px 24px rgba(184, 84, 24, 0.15),
+    inset 0 0 0 1px rgba(184, 84, 24, 0.1);
 }
 
 .sommelier-beer-card__top-badge {
@@ -260,7 +285,11 @@
   right: 0.8rem;
   padding: 0.18rem 0.55rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--sommelier-accent), var(--sommelier-accent-deep));
+  background: linear-gradient(
+    135deg,
+    var(--sommelier-accent),
+    var(--sommelier-accent-deep)
+  );
   color: #fff;
   font-size: 0.73rem;
   font-weight: 800;
@@ -336,4 +365,3 @@
     font-size: 2.1rem;
   }
 }
-

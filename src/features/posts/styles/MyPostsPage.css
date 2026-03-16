@@ -22,7 +22,11 @@
   overflow: hidden;
   border-radius: 22px;
   background:
-    linear-gradient(135deg, rgba(255, 246, 229, 0.9), rgba(255, 232, 195, 0.78)),
+    linear-gradient(
+      135deg,
+      rgba(255, 246, 229, 0.9),
+      rgba(255, 232, 195, 0.78)
+    ),
     linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
   min-height: clamp(190px, 32vh, 280px);
   height: clamp(190px, 32vh, 280px);

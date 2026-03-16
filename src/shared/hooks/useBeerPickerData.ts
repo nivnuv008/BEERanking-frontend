@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { UIEvent } from 'react';
-import { getBeersPage, searchBeersPage, type Beer } from '../api/beerApi';
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { UIEvent } from "react";
+import { getBeersPage, searchBeersPage, type Beer } from "../api/beerApi";
 
 type UseBeerPickerDataOptions = {
   enabled?: boolean;
@@ -34,7 +34,9 @@ function mergeUniqueBeers(existing: Beer[], incoming: Beer[]): Beer[] {
   return Array.from(byId.values());
 }
 
-export function useBeerPickerData(options: UseBeerPickerDataOptions = {}): UseBeerPickerDataResult {
+export function useBeerPickerData(
+  options: UseBeerPickerDataOptions = {},
+): UseBeerPickerDataResult {
   const {
     enabled = true,
     debounceMs = 300,
@@ -45,7 +47,7 @@ export function useBeerPickerData(options: UseBeerPickerDataOptions = {}): UseBe
   } = options;
 
   const searchTimeoutRef = useRef<number | null>(null);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [catalogBeers, setCatalogBeers] = useState<Beer[]>([]);
   const [searchResults, setSearchResults] = useState<Beer[]>([]);
   const [catalogPage, setCatalogPage] = useState(0);
@@ -75,12 +77,24 @@ export function useBeerPickerData(options: UseBeerPickerDataOptions = {}): UseBe
     } finally {
       setIsLoadingCatalogPage(false);
     }
-  }, [enabled, isLoadingCatalogPage, catalogHasMore, catalogPage, pageSize, onError]);
+  }, [
+    enabled,
+    isLoadingCatalogPage,
+    catalogHasMore,
+    catalogPage,
+    pageSize,
+    onError,
+  ]);
 
   const loadNextSearchPage = useCallback(async () => {
     const normalizedQuery = query.trim();
 
-    if (!enabled || normalizedQuery.length < minQueryLength || isLoadingSearchPage || !searchHasMore) {
+    if (
+      !enabled ||
+      normalizedQuery.length < minQueryLength ||
+      isLoadingSearchPage ||
+      !searchHasMore
+    ) {
       return;
     }
 
@@ -93,12 +107,22 @@ export function useBeerPickerData(options: UseBeerPickerDataOptions = {}): UseBe
       setSearchHasMore(result.hasMore);
     } catch (error) {
       setSearchHasMore(false);
-      const message = error instanceof Error ? error.message : 'Beer search failed';
+      const message =
+        error instanceof Error ? error.message : "Beer search failed";
       onError?.(message);
     } finally {
       setIsLoadingSearchPage(false);
     }
-  }, [enabled, query, minQueryLength, isLoadingSearchPage, searchHasMore, searchPage, pageSize, onError]);
+  }, [
+    enabled,
+    query,
+    minQueryLength,
+    isLoadingSearchPage,
+    searchHasMore,
+    searchPage,
+    pageSize,
+    onError,
+  ]);
 
   const ensureCatalogLoaded = useCallback(() => {
     if (!enabled || catalogBeers.length > 0 || catalogPage > 0) {
@@ -109,7 +133,7 @@ export function useBeerPickerData(options: UseBeerPickerDataOptions = {}): UseBe
   }, [enabled, catalogBeers.length, catalogPage, loadNextCatalogPage]);
 
   const reset = useCallback(() => {
-    setQuery('');
+    setQuery("");
     setSearchResults([]);
     setSearchPage(0);
     setSearchHasMore(false);
@@ -123,7 +147,8 @@ export function useBeerPickerData(options: UseBeerPickerDataOptions = {}): UseBe
       }
 
       const element = event.currentTarget;
-      const nearBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 24;
+      const nearBottom =
+        element.scrollTop + element.clientHeight >= element.scrollHeight - 24;
 
       if (!nearBottom) {
         return;
@@ -178,7 +203,8 @@ export function useBeerPickerData(options: UseBeerPickerDataOptions = {}): UseBe
         setSearchPage(result.page);
         setSearchHasMore(result.hasMore);
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Beer search failed';
+        const message =
+          error instanceof Error ? error.message : "Beer search failed";
         onError?.(message);
       } finally {
         setIsSearching(false);

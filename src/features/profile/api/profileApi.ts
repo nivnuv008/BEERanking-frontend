@@ -1,8 +1,8 @@
-import { API_BASE_URL, parseJsonResponse } from '../../../shared/api/apiClient';
-import type { Beer } from '../../../shared/api/beerApi';
-import { fetchWithAuth, setStoredUser } from '../../auth/api/authApi';
+import { API_BASE_URL, parseJsonResponse } from "../../../shared/api/apiClient";
+import type { Beer } from "../../../shared/api/beerApi";
+import { fetchWithAuth, setStoredUser } from "../../auth/api/authApi";
 
-const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || "";
 
 export type UserProfile = {
   _id: string;
@@ -31,18 +31,20 @@ export async function getCurrentUserProfile(): Promise<UserProfile> {
   return user;
 }
 
-export async function updateCurrentUserProfile(payload: UserUpdatePayload): Promise<UserProfile> {
+export async function updateCurrentUserProfile(
+  payload: UserUpdatePayload,
+): Promise<UserProfile> {
   const formData = new FormData();
-  formData.append('username', payload.username.trim());
-  formData.append('favoriteBeers', JSON.stringify(payload.favoriteBeerIds));
+  formData.append("username", payload.username.trim());
+  formData.append("favoriteBeers", JSON.stringify(payload.favoriteBeerIds));
 
   if (payload.profilePhotoFile) {
-    formData.append('profilePic', payload.profilePhotoFile);
+    formData.append("profilePic", payload.profilePhotoFile);
   }
 
   const response = await fetchWithAuth(`${API_BASE_URL}/users/me`, {
-    method: 'PATCH',
-    body: formData
+    method: "PATCH",
+    body: formData,
   });
 
   const data = await parseJsonResponse<UpdateProfileResponse>(response);
@@ -59,12 +61,15 @@ export function getProfileImageUrl(profilePic?: string | null): string | null {
     return profilePic;
   }
 
-  if (profilePic.startsWith('/')) {
+  if (profilePic.startsWith("/")) {
     if (BACKEND_BASE_URL) {
-      return `${BACKEND_BASE_URL.replace(/\/$/, '')}${profilePic}`;
+      return `${BACKEND_BASE_URL.replace(/\/$/, "")}${profilePic}`;
     }
 
-    if (API_BASE_URL.startsWith('http://') || API_BASE_URL.startsWith('https://')) {
+    if (
+      API_BASE_URL.startsWith("http://") ||
+      API_BASE_URL.startsWith("https://")
+    ) {
       const apiUrl = new URL(API_BASE_URL);
       return `${apiUrl.origin}${profilePic}`;
     }

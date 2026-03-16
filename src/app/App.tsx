@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignUp from "../features/auth/pages/SignUp";
 import FeedCommentsPage from "../features/posts/pages/FeedCommentsPage";
 import FeedPage from "../features/posts/pages/FeedPage";
-import AppLayout from "../features/layout/pages/AppLayout";
+import AppLayout from "./layout/AppLayout";
 import CreatePostPage from "../features/posts/pages/CreatePostPage";
 import MyPostsPage from "../features/posts/pages/MyPostsPage";
 import ProfilePage from "../features/profile/pages/ProfilePage";

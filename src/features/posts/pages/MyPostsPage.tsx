@@ -7,6 +7,7 @@ import CameraCapture, {
 } from "../../../shared/components/CameraCapture";
 import PostCard from "../components/PostCard";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import { mergeById } from "../../../shared/utils/mergeById";
 import type { FeedPost } from "../types/post";
@@ -118,11 +119,7 @@ function MyPostsPage() {
       setHasMore(result.hasMore);
       setError("");
     } catch (loadError: unknown) {
-      const message =
-        loadError instanceof Error
-          ? loadError.message
-          : "Failed to load your posts";
-      setError(message);
+      setError(getErrorMessage(loadError, "Failed to load your posts"));
     } finally {
       setIsInitialLoading(false);
       setIsLoadingMore(false);
@@ -516,11 +513,7 @@ function MyPostsPage() {
       clearEditor();
       setSuccessMessage(response.message || "Post updated");
     } catch (saveError: unknown) {
-      const message =
-        saveError instanceof Error
-          ? saveError.message
-          : "Failed to update post";
-      setError(message);
+      setError(getErrorMessage(saveError, "Failed to update post"));
     } finally {
       setIsSaving(false);
     }
@@ -558,11 +551,7 @@ function MyPostsPage() {
       setPostPendingDelete(null);
       setSuccessMessage(response.message || "Post deleted");
     } catch (deleteError: unknown) {
-      const message =
-        deleteError instanceof Error
-          ? deleteError.message
-          : "Failed to delete post";
-      setError(message);
+      setError(getErrorMessage(deleteError, "Failed to delete post"));
     } finally {
       setDeletingPostId(null);
     }

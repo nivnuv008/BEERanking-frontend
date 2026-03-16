@@ -7,6 +7,7 @@ import CameraCapture, {
 } from "../../../shared/components/CameraCapture";
 import BeerSearchPicker from "../../../shared/components/BeerSearchPicker";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
 import { useBeerPickerData } from "../../../shared/hooks/useBeerPickerData";
 import PostRatingField from "../components/PostRatingField";
 import "../styles/CreatePostPage.css";
@@ -219,11 +220,7 @@ function CreatePostPage() {
       handleResetForm();
       setSuccessMessage(response.message || "Post created successfully");
     } catch (submitError: unknown) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : "Failed to create post";
-      setError(message);
+      setError(getErrorMessage(submitError, "Failed to create post"));
     } finally {
       setIsSubmitting(false);
     }

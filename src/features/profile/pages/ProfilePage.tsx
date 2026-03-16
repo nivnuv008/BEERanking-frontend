@@ -7,6 +7,7 @@ import CameraCapture, {
 } from "../../../shared/components/CameraCapture";
 import BeerSearchPicker from "../../../shared/components/BeerSearchPicker";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
 import type { Beer } from "../../../shared/types/beerType";
 import { useBeerPickerData } from "../../../shared/hooks/useBeerPickerData";
 import "../styles/ProfilePage.css";
@@ -74,11 +75,7 @@ function ProfilePage() {
         const userProfile = await getCurrentUserProfile();
         setProfile(userProfile);
       } catch (loadError: unknown) {
-        const message =
-          loadError instanceof Error
-            ? loadError.message
-            : "Failed to load profile";
-        setError(message);
+        setError(getErrorMessage(loadError, "Failed to load profile"));
       } finally {
         setIsLoading(false);
       }
@@ -197,11 +194,7 @@ function ProfilePage() {
       resetBeerPicker();
       setSuccessMessage("Profile updated successfully");
     } catch (saveError: unknown) {
-      const message =
-        saveError instanceof Error
-          ? saveError.message
-          : "Failed to update profile";
-      setError(message);
+      setError(getErrorMessage(saveError, "Failed to update profile"));
     } finally {
       setIsSaving(false);
     }

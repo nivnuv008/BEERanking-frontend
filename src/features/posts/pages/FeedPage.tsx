@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Badge, Card, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import { mergeById } from "../../../shared/utils/mergeById";
 import type { FeedPost } from "../types/post";
@@ -41,9 +42,7 @@ function FeedPage() {
       setHasMore(result.hasMore);
       setError("");
     } catch (loadError: unknown) {
-      const message =
-        loadError instanceof Error ? loadError.message : "Failed to load feed";
-      setError(message);
+      setError(getErrorMessage(loadError, "Failed to load feed"));
     } finally {
       setIsInitialLoading(false);
       setIsLoadingMore(false);

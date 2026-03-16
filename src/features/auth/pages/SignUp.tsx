@@ -3,6 +3,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import { Button, Card, Form } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
 import {
   getAuthRedirectPath,
   persistAuthSession,
@@ -95,9 +96,7 @@ function SignUp() {
       persistAuthSession(response);
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (submitError: unknown) {
-      const message =
-        submitError instanceof Error ? submitError.message : "Sign up failed";
-      setError(message);
+      setError(getErrorMessage(submitError, "Sign up failed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -116,11 +115,7 @@ function SignUp() {
       persistAuthSession(response);
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (googleError: unknown) {
-      const message =
-        googleError instanceof Error
-          ? googleError.message
-          : "Google sign up failed";
-      setError(message);
+      setError(getErrorMessage(googleError, "Google sign up failed"));
     } finally {
       setIsSubmitting(false);
     }

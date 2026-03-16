@@ -6,6 +6,7 @@ import Form from "react-bootstrap/Form";
 import Spinner from "react-bootstrap/Spinner";
 import { getProfileImageUrl } from "../../profile/api/profileApi";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
 import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import { mergeById } from "../../../shared/utils/mergeById";
 import type { FeedComment, FeedPost } from "../types/post";
@@ -71,11 +72,7 @@ function FeedCommentsPage() {
         setHasMore(initialComments.hasMore);
         setError("");
       } catch (loadError: unknown) {
-        const message =
-          loadError instanceof Error
-            ? loadError.message
-            : "Failed to load comments screen";
-        setError(message);
+        setError(getErrorMessage(loadError, "Failed to load comments screen"));
       } finally {
         setIsLoading(false);
       }
@@ -105,11 +102,7 @@ function FeedCommentsPage() {
       setHasMore(result.hasMore);
       setError("");
     } catch (loadError: unknown) {
-      const message =
-        loadError instanceof Error
-          ? loadError.message
-          : "Failed to load more comments";
-      setError(message);
+      setError(getErrorMessage(loadError, "Failed to load more comments"));
     } finally {
       setIsLoadingMore(false);
     }
@@ -168,11 +161,7 @@ function FeedCommentsPage() {
       setCommentMessage("Comment added.");
       setError("");
     } catch (submitError: unknown) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : "Failed to add comment";
-      setError(message);
+      setError(getErrorMessage(submitError, "Failed to add comment"));
       setCommentMessage("");
     } finally {
       setIsSubmittingComment(false);

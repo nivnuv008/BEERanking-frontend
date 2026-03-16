@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { Badge, Form, InputGroup, Spinner } from "react-bootstrap";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
 import {
   askSommelier,
   type AskSommelierResponse,
@@ -45,7 +46,7 @@ export function AISommelier() {
       const response = await askSommelier(trimmed);
       setResult(response);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(getErrorMessage(err, "Something went wrong"));
     } finally {
       setIsLoading(false);
     }

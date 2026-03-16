@@ -23,9 +23,7 @@ function CreatePostPage() {
   const navigate = useNavigate();
   const previewUrlRef = useRef<string | null>(null);
   const cameraCaptureRef = useRef<CameraCaptureHandle | null>(null);
-  const beerBlurRef = useRef<number | null>(null);
   const [selectedBeer, setSelectedBeer] = useState<Beer | null>(null);
-  const [isBeerInputFocused, setIsBeerInputFocused] = useState(false);
   const [rating, setRating] = useState(4);
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -47,6 +45,9 @@ function CreatePostPage() {
     ensureCatalogLoaded,
     onScroll: handleBeerResultsScroll,
     reset: resetBeerPicker,
+    isInputFocused,
+    onFocus: handleBeerInputFocus,
+    onBlur: handleBeerInputBlur,
   } = useBeerPickerData({
     debounceMs: 300,
     preloadCatalog: false,
@@ -55,10 +56,6 @@ function CreatePostPage() {
 
   useEffect(() => {
     return () => {
-      if (beerBlurRef.current) {
-        window.clearTimeout(beerBlurRef.current);
-      }
-
       if (previewUrlRef.current) {
         URL.revokeObjectURL(previewUrlRef.current);
       }
@@ -120,7 +117,7 @@ function CreatePostPage() {
   const handleSelectBeer = (beer: Beer) => {
     setSelectedBeer(beer);
     setBeerQuery(beer.name);
-    setIsBeerInputFocused(false);
+    // picker will be closed via hook's state
     setBeerPickerError("");
     setError("");
   };
@@ -129,21 +126,6 @@ function CreatePostPage() {
     setSelectedBeer(null);
     resetBeerPicker();
     setBeerPickerError("");
-  };
-
-  const handleBeerInputFocus = () => {
-    if (beerBlurRef.current) {
-      window.clearTimeout(beerBlurRef.current);
-    }
-    setBeerPickerError("");
-    ensureCatalogLoaded();
-    setIsBeerInputFocused(true);
-  };
-
-  const handleBeerInputBlur = () => {
-    beerBlurRef.current = window.setTimeout(() => {
-      setIsBeerInputFocused(false);
-    }, 150);
   };
 
   const handleResetForm = () => {
@@ -227,7 +209,7 @@ function CreatePostPage() {
   };
 
   const descriptionLength = description.trimStart().length;
-  const showBeerDropdown = isBeerInputFocused && !selectedBeer;
+  const showBeerDropdown = isInputFocused && !selectedBeer;
   const submitValidationMessage = validateForm(
     selectedBeer ?? getMatchedBeer(),
   );

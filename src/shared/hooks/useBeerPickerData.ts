@@ -23,6 +23,9 @@ type UseBeerPickerDataResult = {
   ensureCatalogLoaded: () => void;
   onScroll: (event: UIEvent<HTMLDivElement>) => void;
   reset: () => void;
+  isInputFocused: boolean;
+  onFocus: () => void;
+  onBlur: () => void;
 };
 
 function mergeUniqueBeers(existing: Beer[], incoming: Beer[]): Beer[] {
@@ -48,6 +51,8 @@ export function useBeerPickerData(
   } = options;
 
   const searchTimeoutRef = useRef<number | null>(null);
+  const beerBlurRef = useRef<number | null>(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const [query, setQuery] = useState("");
   const [catalogBeers, setCatalogBeers] = useState<Beer[]>([]);
   const [searchResults, setSearchResults] = useState<Beer[]>([]);
@@ -180,6 +185,22 @@ export function useBeerPickerData(
     }
   }, [enabled, preloadCatalog, ensureCatalogLoaded]);
 
+  const onFocus = useCallback(() => {
+    if (beerBlurRef.current) {
+      window.clearTimeout(beerBlurRef.current);
+    }
+
+    onError?.("");
+    ensureCatalogLoaded();
+    setIsInputFocused(true);
+  }, [ensureCatalogLoaded, onError]);
+
+  const onBlur = useCallback(() => {
+    beerBlurRef.current = window.setTimeout(() => {
+      setIsInputFocused(false);
+    }, 150);
+  }, []);
+
   useEffect(() => {
     if (!enabled) {
       return;
@@ -233,6 +254,10 @@ export function useBeerPickerData(
       if (searchTimeoutRef.current) {
         window.clearTimeout(searchTimeoutRef.current);
       }
+
+      if (beerBlurRef.current) {
+        window.clearTimeout(beerBlurRef.current);
+      }
     };
   }, []);
 
@@ -247,5 +272,8 @@ export function useBeerPickerData(
     ensureCatalogLoaded,
     onScroll,
     reset,
+    isInputFocused,
+    onFocus,
+    onBlur,
   };
 }

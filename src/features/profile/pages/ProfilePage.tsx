@@ -31,7 +31,6 @@ const MAX_FAVORITE_BEERS = 3;
 function ProfilePage() {
   const navigate = useNavigate();
   const cameraCaptureRef = useRef<CameraCaptureHandle | null>(null);
-  const beerBlurRef = useRef<number | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(() =>
     getStoredUser<UserProfile>(),
   );
@@ -44,7 +43,7 @@ function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isBeerInputFocused, setIsBeerInputFocused] = useState(false);
+
   const [beerPickerError, setBeerPickerError] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -60,6 +59,9 @@ function ProfilePage() {
     ensureCatalogLoaded,
     onScroll: handleBeerResultsScroll,
     reset: resetBeerPicker,
+    isInputFocused,
+    onFocus: handleBeerInputFocus,
+    onBlur: handleBeerInputBlur,
   } = useBeerPickerData({
     enabled: isEditing,
     debounceMs: 350,
@@ -96,21 +98,6 @@ function ProfilePage() {
       previewUrl: getProfileImageUrl(profile.profilePic),
     });
   }, [profile]);
-
-  const handleBeerInputFocus = () => {
-    if (beerBlurRef.current) {
-      window.clearTimeout(beerBlurRef.current);
-    }
-    setBeerPickerError("");
-    ensureCatalogLoaded();
-    setIsBeerInputFocused(true);
-  };
-
-  const handleBeerInputBlur = () => {
-    beerBlurRef.current = window.setTimeout(() => {
-      setIsBeerInputFocused(false);
-    }, 150);
-  };
 
   const handleEditToggle = () => {
     if (!profile) {
@@ -442,7 +429,7 @@ function ProfilePage() {
                       }}
                       onFocus={handleBeerInputFocus}
                       onBlur={handleBeerInputBlur}
-                      isOpen={isBeerInputFocused}
+                      isOpen={isInputFocused}
                       beers={displayedBeers}
                       hasActiveQuery={hasActiveQuery}
                       isSearching={isSearching}

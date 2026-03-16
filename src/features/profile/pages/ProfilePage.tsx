@@ -67,13 +67,6 @@ function ProfilePage() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      navigate("/", { replace: true });
-      return;
-    }
-
     const loadProfile = async () => {
       try {
         setIsLoading(true);
@@ -92,7 +85,7 @@ function ProfilePage() {
     };
 
     void loadProfile();
-  }, [navigate]);
+  }, []);
 
   useEffect(() => {
     if (!profile) {

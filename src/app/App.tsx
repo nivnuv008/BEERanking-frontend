@@ -8,6 +8,7 @@ import MyPostsPage from "../features/posts/pages/MyPostsPage";
 import ProfilePage from "../features/profile/pages/ProfilePage";
 import WelcomePage from "../features/welcome/pages/WelcomePage";
 import { AISommelier } from "../features/aisommelier/pages/AISommelier";
+import ProtectedRoute from "./ProtectedRoute";
 
 function App() {
   return (
@@ -15,16 +16,18 @@ function App() {
       <Routes>
         <Route path="/" element={<WelcomePage />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route element={<AppLayout />}>
-          <Route path="/feed" element={<FeedPage />} />
-          <Route
-            path="/posts/:postId/comments"
-            element={<FeedCommentsPage />}
-          />
-          <Route path="/my-posts" element={<MyPostsPage />} />
-          <Route path="/create-post" element={<CreatePostPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/ai-sommelier" element={<AISommelier />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/feed" element={<FeedPage />} />
+            <Route
+              path="/posts/:postId/comments"
+              element={<FeedCommentsPage />}
+            />
+            <Route path="/my-posts" element={<MyPostsPage />} />
+            <Route path="/create-post" element={<CreatePostPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/ai-sommelier" element={<AISommelier />} />
+          </Route>
         </Route>
       </Routes>
     </Router>

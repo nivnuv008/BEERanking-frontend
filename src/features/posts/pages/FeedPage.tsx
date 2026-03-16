@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Badge, Card, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { getAuthToken } from "../../auth/api/authApi";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
 import { mergeById } from "../../../shared/utils/mergeById";
 import type { FeedPost } from "../types/post";
@@ -21,12 +20,6 @@ function FeedPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!getAuthToken()) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate]);
 
   const loadPosts = async (reset = false) => {
     const targetSkip = reset ? 0 : nextSkip;

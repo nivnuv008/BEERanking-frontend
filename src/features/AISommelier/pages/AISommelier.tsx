@@ -1,7 +1,5 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { Badge, Form, InputGroup, Spinner } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import { getAuthToken } from "../../auth/api/authApi";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
 import {
   askSommelier,
@@ -29,18 +27,10 @@ const BADGE_MODIFIER: Record<RecommendationType, string> = {
 };
 
 export function AISommelier() {
-  const navigate = useNavigate();
-
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AskSommelierResponse | null>(null);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!getAuthToken()) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Badge, Button, Card, Form, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { getAuthToken } from "../../auth/api/authApi";
 import CameraCapture, {
   type CameraCaptureHandle,
 } from "../../../shared/components/CameraCapture";
@@ -46,12 +45,6 @@ function MyPostsPage() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
-
-  useEffect(() => {
-    if (!getAuthToken()) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate]);
 
   useEffect(() => {
     return () => {

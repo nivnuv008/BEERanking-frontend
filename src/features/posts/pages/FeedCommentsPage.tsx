@@ -4,7 +4,6 @@ import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import Spinner from "react-bootstrap/Spinner";
-import { getAuthToken } from "../../auth/api/authApi";
 import { getProfileImageUrl } from "../../profile/api/profileApi";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
 import { mergeById } from "../../../shared/utils/mergeById";
@@ -61,12 +60,6 @@ function FeedCommentsPage() {
   const [commentText, setCommentText] = useState("");
   const [commentMessage, setCommentMessage] = useState("");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!getAuthToken()) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate]);
 
   useEffect(() => {
     if (!postId) {

@@ -10,7 +10,6 @@ import FeedbackToast from "../../../shared/components/FeedbackToast";
 import { useBeerPickerData } from "../../../shared/hooks/useBeerPickerData";
 import PostRatingField from "../components/PostRatingField";
 import "../styles/CreatePostPage.css";
-import { getAuthToken } from "../../auth/api/authApi";
 import { type Beer } from "../../../shared/api/beerApi";
 import { createPost } from "../api/postApi";
 
@@ -53,12 +52,6 @@ function CreatePostPage() {
     preloadCatalog: false,
     onError: setBeerPickerError,
   });
-
-  useEffect(() => {
-    if (!getAuthToken()) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate]);
 
   useEffect(() => {
     return () => {

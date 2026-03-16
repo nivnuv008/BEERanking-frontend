@@ -1,22 +1,17 @@
-import { API_BASE_URL, parseJsonResponse } from "../../../shared/api/apiClient";
+import {
+  API_BASE_URL,
+  BackendPaginatedResponse,
+  PageResult,
+  PagingParams,
+  parseJsonResponse,
+  toPageRequest,
+  toPageResult,
+} from "../../../shared/api/apiClient";
 import type { FeedPost } from "../types/post";
 import { fetchWithAuth } from "../../auth/api/authApi";
-
-const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || "";
+import { normalizePost } from "./postsApiShared";
 
 export type CreatedPost = FeedPost;
-
-type BackendPagination = {
-  page: number;
-  limit: number;
-  total: number;
-  pages: number;
-};
-
-type BackendPaginatedResponse<T> = {
-  data: T[];
-  pagination: BackendPagination;
-};
 
 type CreatePostResponse = {
   message: string;
@@ -45,54 +40,9 @@ type UpdatePostPayload = {
   description?: string;
 };
 
-export type PostPagingParams = {
-  skip?: number;
-  limit?: number;
-};
+export type PostPagingParams = PagingParams;
 
-export type PostPageResult = {
-  items: FeedPost[];
-  total: number;
-  nextSkip: number;
-  hasMore: boolean;
-};
-
-function resolveBackendAssetUrl(path?: string | null): string {
-  if (!path) {
-    return "";
-  }
-
-  if (/^https?:\/\//i.test(path) || path.startsWith("data:")) {
-    return path;
-  }
-
-  if (!path.startsWith("/")) {
-    return path;
-  }
-
-  if (BACKEND_BASE_URL) {
-    return `${BACKEND_BASE_URL.replace(/\/$/, "")}${path}`;
-  }
-
-  if (
-    API_BASE_URL.startsWith("http://") ||
-    API_BASE_URL.startsWith("https://")
-  ) {
-    const apiUrl = new URL(API_BASE_URL);
-    return `${apiUrl.origin}${path}`;
-  }
-
-  return path;
-}
-
-function normalizePost(post: FeedPost): FeedPost {
-  return {
-    ...post,
-    image: resolveBackendAssetUrl(post.image),
-    likeCount: Number.isFinite(post.likeCount) ? post.likeCount : 0,
-    commentCount: Number.isFinite(post.commentCount) ? post.commentCount : 0,
-  };
-}
+export type PostPageResult = PageResult<FeedPost>;
 
 export async function createPost(
   payload: CreatePostPayload,
@@ -123,9 +73,7 @@ export async function createPost(
 export async function getMyPosts(
   params: PostPagingParams = {},
 ): Promise<PostPageResult> {
-  const skip = Math.max(0, params.skip ?? 0);
-  const limit = Math.max(1, params.limit ?? 6);
-  const page = Math.floor(skip / limit) + 1;
+  const { skip, limit, page } = toPageRequest(params, 6);
 
   const response = await fetchWithAuth(
     `${API_BASE_URL}/posts/me?page=${page}&limit=${limit}`,
@@ -134,18 +82,8 @@ export async function getMyPosts(
     response,
     "Failed to load your posts",
   );
-  const items = Array.isArray(payload.data)
-    ? payload.data.map(normalizePost)
-    : [];
-  const total = payload.pagination?.total ?? items.length;
-  const nextSkip = skip + items.length;
 
-  return {
-    items,
-    total,
-    nextSkip,
-    hasMore: nextSkip < total,
-  };
+  return toPageResult(payload, skip, normalizePost);
 }
 
 export async function updatePost(

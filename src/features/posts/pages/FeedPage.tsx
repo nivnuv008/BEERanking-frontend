@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge, Card, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import { mergeById } from "../../../shared/utils/mergeById";
 import type { FeedPost } from "../types/post";
 import { getFeedPosts } from "../api/feedApi";
@@ -12,7 +13,6 @@ const PAGE_SIZE = 4;
 
 function FeedPage() {
   const navigate = useNavigate();
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [nextSkip, setNextSkip] = useState(0);
   const [totalPosts, setTotalPosts] = useState(0);
@@ -55,36 +55,10 @@ function FeedPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-
-    if (!sentinel || !hasMore || isInitialLoading || isLoadingMore || error) {
-      return;
-    }
-
-    const root = document.querySelector(".app-shell__content");
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-
-        if (entry?.isIntersecting) {
-          void loadPosts(false);
-        }
-      },
-      {
-        root,
-        rootMargin: "0px 0px 260px 0px",
-        threshold: 0,
-      },
-    );
-
-    observer.observe(sentinel);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [error, hasMore, isInitialLoading, isLoadingMore, nextSkip]);
+  const { sentinelRef } = useInfiniteScroll({
+    enabled: hasMore && !isInitialLoading && !isLoadingMore && !error,
+    onIntersect: () => loadPosts(false),
+  });
 
   const handleRetry = () => {
     void loadPosts(true);

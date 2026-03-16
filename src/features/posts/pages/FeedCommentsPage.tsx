@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
@@ -6,6 +6,7 @@ import Form from "react-bootstrap/Form";
 import Spinner from "react-bootstrap/Spinner";
 import { getProfileImageUrl } from "../../profile/api/profileApi";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import { mergeById } from "../../../shared/utils/mergeById";
 import type { FeedComment, FeedPost } from "../types/post";
 import {
@@ -15,6 +16,7 @@ import {
 } from "../api/feedApi";
 import PostCard from "../components/PostCard";
 import "../styles/FeedPage.css";
+import { formatDateTime, getInitials } from "../utils/postDisplay";
 
 const PAGE_SIZE = 20;
 
@@ -23,26 +25,8 @@ type FeedCommentsLocationState = {
   returnTo?: string;
   returnLabel?: string;
 };
-
-function formatDateTime(value: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function getInitials(username: string): string {
-  return username
-    .split(/\s+/)
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 function FeedCommentsPage() {
   const navigate = useNavigate();
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { postId } = useParams();
   const location = useLocation();
   const locationState = location.state as FeedCommentsLocationState | null;
@@ -131,36 +115,10 @@ function FeedCommentsPage() {
     }
   };
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-
-    if (!sentinel || isLoading || isLoadingMore || !hasMore || error) {
-      return;
-    }
-
-    const root = document.querySelector(".app-shell__content");
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-
-        if (entry?.isIntersecting) {
-          void loadMoreComments();
-        }
-      },
-      {
-        root,
-        rootMargin: "0px 0px 260px 0px",
-        threshold: 0,
-      },
-    );
-
-    observer.observe(sentinel);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [error, hasMore, isLoading, isLoadingMore, nextSkip]);
+  const { sentinelRef } = useInfiniteScroll({
+    enabled: !isLoading && !isLoadingMore && hasMore && !error,
+    onIntersect: loadMoreComments,
+  });
 
   if (isLoading) {
     return (

@@ -12,8 +12,7 @@ import PostRatingField from "../components/PostRatingField";
 import "../styles/CreatePostPage.css";
 import { type Beer } from "../../../shared/api/beerApi";
 import { createPost } from "../api/postApi";
-
-const DESCRIPTION_LIMIT = 1000;
+import { POST_DESCRIPTION_LIMIT } from "../constants/postConstants";
 
 function normalizeText(value: string): string {
   return value.trim().toLowerCase();
@@ -188,8 +187,8 @@ function CreatePostPage() {
       return "Description is required";
     }
 
-    if (description.trim().length > DESCRIPTION_LIMIT) {
-      return `Description must be ${DESCRIPTION_LIMIT} characters or less`;
+    if (description.trim().length > POST_DESCRIPTION_LIMIT) {
+      return `Description must be ${POST_DESCRIPTION_LIMIT} characters or less`;
     }
 
     return "";
@@ -485,7 +484,7 @@ function CreatePostPage() {
                   id="post-description"
                   className="form-control create-post-form__textarea"
                   rows={3}
-                  maxLength={DESCRIPTION_LIMIT}
+                  maxLength={POST_DESCRIPTION_LIMIT}
                   placeholder="Aroma, body, finish, setting, or why you would order it again."
                   value={description}
                   onChange={(event) => {
@@ -495,7 +494,7 @@ function CreatePostPage() {
                 />
                 <div className="create-post-form__footer-note d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3">
                   <strong>
-                    {descriptionLength}/{DESCRIPTION_LIMIT}
+                    {descriptionLength}/{POST_DESCRIPTION_LIMIT}
                   </strong>
                 </div>
               </div>

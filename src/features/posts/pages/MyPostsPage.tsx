@@ -7,6 +7,7 @@ import CameraCapture, {
 } from "../../../shared/components/CameraCapture";
 import PostCard from "../components/PostCard";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
 import { mergeById } from "../../../shared/utils/mergeById";
 import type { FeedPost } from "../types/post";
 import PostRatingField from "../components/PostRatingField";
@@ -14,9 +15,9 @@ import ConfirmDialog from "../../../shared/components/ConfirmDialog";
 import "../styles/FeedPage.css";
 import { deletePost, getMyPosts, updatePost } from "../api/postApi";
 import "../styles/MyPostsPage.css";
+import { POST_DESCRIPTION_LIMIT } from "../constants/postConstants";
 
 const PAGE_SIZE = 4;
-const DESCRIPTION_LIMIT = 1000;
 
 type EditDraft = {
   postId: string;
@@ -28,7 +29,6 @@ type EditDraft = {
 
 function MyPostsPage() {
   const navigate = useNavigate();
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const previewUrlRef = useRef<string | null>(null);
   const cameraCaptureRef = useRef<CameraCaptureHandle | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -134,36 +134,10 @@ function MyPostsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-
-    if (!sentinel || !hasMore || isInitialLoading || isLoadingMore || error) {
-      return;
-    }
-
-    const root = document.querySelector(".app-shell__content");
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-
-        if (entry?.isIntersecting) {
-          void loadPosts(false);
-        }
-      },
-      {
-        root,
-        rootMargin: "0px 0px 260px 0px",
-        threshold: 0,
-      },
-    );
-
-    observer.observe(sentinel);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [error, hasMore, isInitialLoading, isLoadingMore, nextSkip]);
+  const { sentinelRef } = useInfiniteScroll({
+    enabled: hasMore && !isInitialLoading && !isLoadingMore && !error,
+    onIntersect: () => loadPosts(false),
+  });
 
   useEffect(() => {
     if (editDraft && !posts.some((post) => post._id === editDraft.postId)) {
@@ -376,7 +350,7 @@ function MyPostsPage() {
                       id="my-post-description"
                       className="feed-textarea"
                       rows={6}
-                      maxLength={DESCRIPTION_LIMIT}
+                      maxLength={POST_DESCRIPTION_LIMIT}
                       value={editDraft.description}
                       onChange={(event) => {
                         setEditDraft((currentDraft) =>
@@ -394,7 +368,7 @@ function MyPostsPage() {
                     <div className="my-posts-editor__meta-row">
                       <span>
                         {editDraft.description.trim().length}/
-                        {DESCRIPTION_LIMIT}
+                        {POST_DESCRIPTION_LIMIT}
                       </span>
                       <span>
                         {editDraft.imageFile
@@ -491,8 +465,8 @@ function MyPostsPage() {
       return "Description is required";
     }
 
-    if (trimmedDescription.length > DESCRIPTION_LIMIT) {
-      return `Description must be ${DESCRIPTION_LIMIT} characters or less`;
+    if (trimmedDescription.length > POST_DESCRIPTION_LIMIT) {
+      return `Description must be ${POST_DESCRIPTION_LIMIT} characters or less`;
     }
 
     return "";

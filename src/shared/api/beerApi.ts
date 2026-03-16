@@ -1,4 +1,5 @@
 import { API_BASE_URL, parseJsonResponse } from "./apiClient";
+import type { BackendPagination } from "./apiClient";
 
 export type Beer = {
   _id: string;
@@ -17,13 +18,6 @@ type BeerSearchApiItem = {
   style: string;
   abv: number;
   description?: string;
-};
-
-type BackendPagination = {
-  page: number;
-  limit: number;
-  total: number;
-  pages: number;
 };
 
 export type BeerPageResult = {

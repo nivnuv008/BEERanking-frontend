@@ -1,0 +1,1 @@
+export const POST_DESCRIPTION_LIMIT = 1000;

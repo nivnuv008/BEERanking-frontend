@@ -1,12 +1,12 @@
-import Button from 'react-bootstrap/Button';
-import Toast from 'react-bootstrap/Toast';
-import './FeedbackToast.css';
+import Button from "react-bootstrap/Button";
+import Toast from "react-bootstrap/Toast";
+import "./FeedbackToast.css";
 
 type FeedbackToastProps = {
   show: boolean;
   title: string;
   message: string;
-  variant?: 'success' | 'danger';
+  variant?: "success" | "danger";
   onClose: () => void;
   actionLabel?: string;
   onAction?: () => void;
@@ -18,14 +18,14 @@ function FeedbackToast({
   show,
   title,
   message,
-  variant = 'success',
+  variant = "success",
   onClose,
   actionLabel,
   onAction,
-  className = '',
+  className = "",
   autoHideDelay = 4000,
 }: FeedbackToastProps) {
-  const icon = variant === 'success' ? '✓' : '!';
+  const icon = variant === "success" ? "✓" : "!";
 
   return (
     <Toast
@@ -47,7 +47,13 @@ function FeedbackToast({
       <Toast.Body className="feedback-toast__body">
         <p className="feedback-toast__message mb-0">{message}</p>
         {actionLabel && onAction ? (
-          <Button type="button" variant="light" size="sm" className="feedback-toast__action mt-3 rounded-pill px-3 fw-semibold" onClick={onAction}>
+          <Button
+            type="button"
+            variant="light"
+            size="sm"
+            className="feedback-toast__action mt-3 rounded-pill px-3 fw-semibold"
+            onClick={onAction}
+          >
             {actionLabel}
           </Button>
         ) : null}

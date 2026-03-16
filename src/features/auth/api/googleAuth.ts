@@ -20,7 +20,10 @@ type GoogleButtonConfiguration = {
 
 type GoogleAccountsId = {
   initialize: (options: GoogleIdConfiguration) => void;
-  renderButton: (parent: HTMLElement, options: GoogleButtonConfiguration) => void;
+  renderButton: (
+    parent: HTMLElement,
+    options: GoogleButtonConfiguration,
+  ) => void;
 };
 
 declare global {
@@ -43,13 +46,14 @@ function loadGoogleScript(): Promise<void> {
   }
 
   googleScriptPromise = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
     script.defer = true;
 
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load Google Identity Services'));    
+    script.onerror = () =>
+      reject(new Error("Failed to load Google Identity Services"));
 
     document.head.appendChild(script);
   });
@@ -57,9 +61,11 @@ function loadGoogleScript(): Promise<void> {
   return googleScriptPromise;
 }
 
-export async function getGoogleIdToken(clientId: string | undefined): Promise<string> {
+export async function getGoogleIdToken(
+  clientId: string | undefined,
+): Promise<string> {
   if (!clientId) {
-    throw new Error('Missing Google Client ID (VITE_GOOGLE_CLIENT_ID)');
+    throw new Error("Missing Google Client ID (VITE_GOOGLE_CLIENT_ID)");
   }
 
   await loadGoogleScript();
@@ -68,14 +74,14 @@ export async function getGoogleIdToken(clientId: string | undefined): Promise<st
     const googleApi = window.google?.accounts?.id;
 
     if (!googleApi) {
-      reject(new Error('Google Identity Services is unavailable'));
+      reject(new Error("Google Identity Services is unavailable"));
       return;
     }
 
-    const container = document.createElement('div');
-    container.style.position = 'fixed';
-    container.style.top = '-9999px';
-    container.style.left = '-9999px';
+    const container = document.createElement("div");
+    container.style.position = "fixed";
+    container.style.top = "-9999px";
+    container.style.left = "-9999px";
     document.body.appendChild(container);
 
     const cleanup = () => {
@@ -92,18 +98,18 @@ export async function getGoogleIdToken(clientId: string | undefined): Promise<st
           if (response?.credential) {
             resolve(response.credential);
           } else {
-            reject(new Error('Google sign-in failed - no credential received'));
+            reject(new Error("Google sign-in failed - no credential received"));
           }
         },
-        cancel_on_tap_outside: false
+        cancel_on_tap_outside: false,
       });
 
       googleApi.renderButton(container, {
-        type: 'standard',
-        theme: 'outline',
-        size: 'large',
-        text: 'signin_with',
-        width: 250
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        text: "signin_with",
+        width: 250,
       });
 
       setTimeout(() => {
@@ -112,18 +118,19 @@ export async function getGoogleIdToken(clientId: string | undefined): Promise<st
           button.click();
         } else {
           cleanup();
-          reject(new Error('Google sign-in button not found'));
+          reject(new Error("Google sign-in button not found"));
         }
       }, 100);
 
       setTimeout(() => {
         cleanup();
-        reject(new Error('Google sign-in timed out'));
+        reject(new Error("Google sign-in timed out"));
       }, 60000);
-
     } catch (error: unknown) {
       cleanup();
-      reject(error instanceof Error ? error : new Error('Google sign-in failed'));
+      reject(
+        error instanceof Error ? error : new Error("Google sign-in failed"),
+      );
     }
   });
 }

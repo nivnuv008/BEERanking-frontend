@@ -1,7 +1,7 @@
-import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import Form from 'react-bootstrap/Form';
-import ToggleButton from 'react-bootstrap/ToggleButton';
-import './PostRatingField.css';
+import ButtonGroup from "react-bootstrap/ButtonGroup";
+import Form from "react-bootstrap/Form";
+import ToggleButton from "react-bootstrap/ToggleButton";
+import "./PostRatingField.css";
 
 type PostRatingFieldProps = {
   label: string;
@@ -21,21 +21,33 @@ function clampRating(value: number): number {
   return Math.min(5, Math.max(1, Math.round(value * 10) / 10));
 }
 
-function PostRatingField({ label, value, onChange, disabled = false, inputId }: PostRatingFieldProps) {
+function PostRatingField({
+  label,
+  value,
+  onChange,
+  disabled = false,
+  inputId,
+}: PostRatingFieldProps) {
   const safeValue = clampRating(value);
 
   return (
     <div className="rating-field">
       <div className="d-flex align-items-start justify-content-between gap-3 mb-3">
         <div>
-          <Form.Label htmlFor={inputId} className="create-post-form__label rating-field__label">
+          <Form.Label
+            htmlFor={inputId}
+            className="create-post-form__label rating-field__label"
+          >
             {label}
           </Form.Label>
         </div>
         <div className="rating-field__value">{safeValue.toFixed(1)}</div>
       </div>
 
-      <ButtonGroup className="rating-field__quick-picks" aria-label={`${label} presets`}>
+      <ButtonGroup
+        className="rating-field__quick-picks"
+        aria-label={`${label} presets`}
+      >
         {QUICK_RATINGS.map((quickValue) => (
           <ToggleButton
             key={quickValue}
@@ -43,9 +55,9 @@ function PostRatingField({ label, value, onChange, disabled = false, inputId }: 
             type="radio"
             name={inputId ?? label}
             value={quickValue}
-            variant={safeValue === quickValue ? 'warning' : 'outline-secondary'}
+            variant={safeValue === quickValue ? "warning" : "outline-secondary"}
             checked={safeValue === quickValue}
-            className={`rating-field__chip${safeValue === quickValue ? ' rating-field__chip--active' : ''}`}
+            className={`rating-field__chip${safeValue === quickValue ? " rating-field__chip--active" : ""}`}
             onClick={() => onChange(quickValue)}
             disabled={disabled}
           >
@@ -61,7 +73,9 @@ function PostRatingField({ label, value, onChange, disabled = false, inputId }: 
           max={5}
           step={0.1}
           value={safeValue}
-          onChange={(event) => onChange(clampRating(Number(event.target.value)))}
+          onChange={(event) =>
+            onChange(clampRating(Number(event.target.value)))
+          }
           className="rating-field__range"
           aria-label={label}
           disabled={disabled}

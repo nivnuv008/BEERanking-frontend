@@ -61,7 +61,10 @@
   color: #6b4f38;
   font-weight: 700;
   text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .app-navbar__link:hover {

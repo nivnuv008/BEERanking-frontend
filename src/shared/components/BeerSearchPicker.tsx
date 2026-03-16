@@ -1,5 +1,5 @@
-import type { UIEvent } from 'react';
-import type { Beer } from '../api/beerApi';
+import type { UIEvent } from "react";
+import type { Beer } from "../api/beerApi";
 
 type BeerSearchPickerProps = {
   inputId: string;
@@ -37,7 +37,7 @@ type BeerSearchPickerProps = {
 };
 
 function defaultGetActionLabel(): string {
-  return 'Select';
+  return "Select";
 }
 
 function defaultRenderMeta(beer: Beer): string {
@@ -65,11 +65,11 @@ export default function BeerSearchPicker({
   renderMeta = defaultRenderMeta,
   showClearButton = false,
   onClear,
-  clearButtonLabel = 'Clear',
-  searchingText = 'Searching beers...',
-  noResultsText = 'No beers matched this search.',
+  clearButtonLabel = "Clear",
+  searchingText = "Searching beers...",
+  noResultsText = "No beers matched this search.",
   minCharsText,
-  loadingMoreText = 'Loading more beers...',
+  loadingMoreText = "Loading more beers...",
   preResultsContent,
   inputRowClassName,
   inputClassName,
@@ -79,7 +79,8 @@ export default function BeerSearchPicker({
   helperClassName,
 }: BeerSearchPickerProps) {
   const trimmedQueryLength = query.trim().length;
-  const effectiveMinCharsText = minCharsText ?? `Type at least ${minQueryLength} characters to search.`;
+  const effectiveMinCharsText =
+    minCharsText ?? `Type at least ${minQueryLength} characters to search.`;
 
   return (
     <>
@@ -103,7 +104,11 @@ export default function BeerSearchPicker({
         />
 
         {showClearButton && onClear ? (
-          <button type="button" className={clearButtonClassName} onClick={onClear}>
+          <button
+            type="button"
+            className={clearButtonClassName}
+            onClick={onClear}
+          >
             {clearButtonLabel}
           </button>
         ) : null}
@@ -112,12 +117,20 @@ export default function BeerSearchPicker({
       {preResultsContent}
 
       {isOpen ? (
-        <div className={resultsClassName} aria-live="polite" onScroll={onScroll}>
+        <div
+          className={resultsClassName}
+          aria-live="polite"
+          onScroll={onScroll}
+        >
           {trimmedQueryLength > 0 && trimmedQueryLength < minQueryLength ? (
             <p className={helperClassName}>{effectiveMinCharsText}</p>
           ) : null}
-          {isSearching ? <p className={helperClassName}>{searchingText}</p> : null}
-          {!isSearching && hasActiveQuery && beers.length === 0 ? <p className={helperClassName}>{noResultsText}</p> : null}
+          {isSearching ? (
+            <p className={helperClassName}>{searchingText}</p>
+          ) : null}
+          {!isSearching && hasActiveQuery && beers.length === 0 ? (
+            <p className={helperClassName}>{noResultsText}</p>
+          ) : null}
 
           {!isSearching
             ? beers.map((beer) => {
@@ -141,7 +154,9 @@ export default function BeerSearchPicker({
               })
             : null}
 
-          {isLoadingMore ? <p className={helperClassName}>{loadingMoreText}</p> : null}
+          {isLoadingMore ? (
+            <p className={helperClassName}>{loadingMoreText}</p>
+          ) : null}
         </div>
       ) : null}
     </>

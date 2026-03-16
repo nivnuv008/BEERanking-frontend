@@ -1,16 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
-import type { ChangeEvent, DragEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Badge from 'react-bootstrap/Badge';
-import CameraCapture, { type CameraCaptureHandle } from '../../camera/CameraCapture';
-import BeerSearchPicker from '../../../shared/components/BeerSearchPicker';
-import FeedbackToast from '../../../shared/components/FeedbackToast';
-import { useBeerPickerData } from '../../../shared/hooks/useBeerPickerData';
-import PostRatingField from '../components/PostRatingField';
-import '../styles/CreatePostPage.css';
-import { getAuthToken } from '../../auth/api/authApi';
-import { type Beer } from '../../../shared/api/beerApi';
-import { createPost } from '../api/postApi';
+import { useEffect, useRef, useState } from "react";
+import type { ChangeEvent, DragEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import Badge from "react-bootstrap/Badge";
+import CameraCapture, {
+  type CameraCaptureHandle,
+} from "../../camera/CameraCapture";
+import BeerSearchPicker from "../../../shared/components/BeerSearchPicker";
+import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { useBeerPickerData } from "../../../shared/hooks/useBeerPickerData";
+import PostRatingField from "../components/PostRatingField";
+import "../styles/CreatePostPage.css";
+import { getAuthToken } from "../../auth/api/authApi";
+import { type Beer } from "../../../shared/api/beerApi";
+import { createPost } from "../api/postApi";
 
 const DESCRIPTION_LIMIT = 1000;
 
@@ -26,14 +28,14 @@ function CreatePostPage() {
   const [selectedBeer, setSelectedBeer] = useState<Beer | null>(null);
   const [isBeerInputFocused, setIsBeerInputFocused] = useState(false);
   const [rating, setRating] = useState(4);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [beerPickerError, setBeerPickerError] = useState('');
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [beerPickerError, setBeerPickerError] = useState("");
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const {
     query: beerQuery,
@@ -54,7 +56,7 @@ function CreatePostPage() {
 
   useEffect(() => {
     if (!getAuthToken()) {
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     }
   }, [navigate]);
 
@@ -84,8 +86,8 @@ function CreatePostPage() {
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
-      setError('Please choose an image file');
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose an image file");
       return;
     }
 
@@ -96,8 +98,8 @@ function CreatePostPage() {
     previewUrlRef.current = previewUrl;
     setImageFile(file);
     setImagePreview(previewUrl);
-    setError('');
-    setSuccessMessage('');
+    setError("");
+    setSuccessMessage("");
   };
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -126,21 +128,21 @@ function CreatePostPage() {
     setSelectedBeer(beer);
     setBeerQuery(beer.name);
     setIsBeerInputFocused(false);
-    setBeerPickerError('');
-    setError('');
+    setBeerPickerError("");
+    setError("");
   };
 
   const handleClearBeer = () => {
     setSelectedBeer(null);
     resetBeerPicker();
-    setBeerPickerError('');
+    setBeerPickerError("");
   };
 
   const handleBeerInputFocus = () => {
     if (beerBlurRef.current) {
       window.clearTimeout(beerBlurRef.current);
     }
-    setBeerPickerError('');
+    setBeerPickerError("");
     ensureCatalogLoaded();
     setIsBeerInputFocused(true);
   };
@@ -155,9 +157,9 @@ function CreatePostPage() {
     cameraCaptureRef.current?.closeCamera();
     setSelectedBeer(null);
     resetBeerPicker();
-    setBeerPickerError('');
+    setBeerPickerError("");
     setRating(4);
-    setDescription('');
+    setDescription("");
     setImageFile(null);
     resetImagePreview();
   };
@@ -169,31 +171,35 @@ function CreatePostPage() {
       return null;
     }
 
-    return beerResults.find((beer) => normalizeText(beer.name) === normalizedQuery) ?? null;
+    return (
+      beerResults.find(
+        (beer) => normalizeText(beer.name) === normalizedQuery,
+      ) ?? null
+    );
   };
 
   const validateForm = (_beer: Beer | null) => {
     if (!imageFile) {
-      return 'Image file is required';
+      return "Image file is required";
     }
 
     if (!_beer) {
-      return 'Please select a beer for this post';
+      return "Please select a beer for this post";
     }
 
     if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
-      return 'Rating must be between 1 and 5';
+      return "Rating must be between 1 and 5";
     }
 
     if (!description.trim()) {
-      return 'Description is required';
+      return "Description is required";
     }
 
     if (description.trim().length > DESCRIPTION_LIMIT) {
       return `Description must be ${DESCRIPTION_LIMIT} characters or less`;
     }
 
-    return '';
+    return "";
   };
 
   const handleSubmit = async () => {
@@ -202,26 +208,29 @@ function CreatePostPage() {
 
     if (validationMessage) {
       setError(validationMessage);
-      setSuccessMessage('');
+      setSuccessMessage("");
       return;
     }
 
     try {
       setIsSubmitting(true);
-      setError('');
-      setSuccessMessage('');
+      setError("");
+      setSuccessMessage("");
 
       const response = await createPost({
         imageFile: imageFile!,
         rating,
         beerId: beerToSubmit?._id ?? null,
-        description
+        description,
       });
 
       handleResetForm();
-      setSuccessMessage(response.message || 'Post created successfully');
+      setSuccessMessage(response.message || "Post created successfully");
     } catch (submitError: unknown) {
-      const message = submitError instanceof Error ? submitError.message : 'Failed to create post';
+      const message =
+        submitError instanceof Error
+          ? submitError.message
+          : "Failed to create post";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -230,7 +239,9 @@ function CreatePostPage() {
 
   const descriptionLength = description.trimStart().length;
   const showBeerDropdown = isBeerInputFocused && !selectedBeer;
-  const submitValidationMessage = validateForm(selectedBeer ?? getMatchedBeer());
+  const submitValidationMessage = validateForm(
+    selectedBeer ?? getMatchedBeer(),
+  );
 
   return (
     <section className="create-post-page" aria-label="Create post page">
@@ -240,12 +251,17 @@ function CreatePostPage() {
           variant="danger"
           title="Could not publish"
           message={error}
-          onClose={() => setError('')}
+          onClose={() => setError("")}
         />
       ) : null}
 
       {successMessage ? (
-        <FeedbackToast show title="Post added" message={successMessage} onClose={() => setSuccessMessage('')} />
+        <FeedbackToast
+          show
+          title="Post added"
+          message={successMessage}
+          onClose={() => setSuccessMessage("")}
+        />
       ) : null}
 
       <div className="create-post-page__backdrop" />
@@ -264,7 +280,11 @@ function CreatePostPage() {
                   <p className="create-post-card__eyebrow">Image *</p>
                   <h2 className="create-post-card__title">Show the pour</h2>
                 </div>
-                {imageFile ? <Badge pill className="create-post-card__badge">Ready to upload</Badge> : null}
+                {imageFile ? (
+                  <Badge pill className="create-post-card__badge">
+                    Ready to upload
+                  </Badge>
+                ) : null}
               </div>
               <CameraCapture
                 ref={cameraCaptureRef}
@@ -274,19 +294,37 @@ function CreatePostPage() {
                 onCapture={handleFileSelected}
                 onError={setError}
               >
-                {({ isOpen, isReady, preview, openCamera, capturePhoto, closeCamera }) => (
+                {({
+                  isOpen,
+                  isReady,
+                  preview,
+                  openCamera,
+                  capturePhoto,
+                  closeCamera,
+                }) => (
                   <>
                     <label
-                      className={`create-post-uploader${isDraggingFile ? ' create-post-uploader--dragging' : ''}`}
+                      className={`create-post-uploader${isDraggingFile ? " create-post-uploader--dragging" : ""}`}
                       onDrop={handleDrop}
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
                     >
-                      <input type="file" accept="image/*" className="create-post-uploader__input" onChange={handleImageChange} />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="create-post-uploader__input"
+                        onChange={handleImageChange}
+                      />
 
-                      {isOpen ? preview : imagePreview ? (
+                      {isOpen ? (
+                        preview
+                      ) : imagePreview ? (
                         <>
-                          <img src={imagePreview} alt="Preview of the post to be uploaded" className="create-post-uploader__preview" />
+                          <img
+                            src={imagePreview}
+                            alt="Preview of the post to be uploaded"
+                            className="create-post-uploader__preview"
+                          />
                           <div className="create-post-uploader__overlay">
                             <span>Replace image</span>
                           </div>
@@ -306,8 +344,8 @@ function CreatePostPage() {
                           type="button"
                           className="btn btn-warning btn-sm rounded-pill px-3 fw-semibold text-white shadow-sm"
                           onClick={() => {
-                            setError('');
-                            setSuccessMessage('');
+                            setError("");
+                            setSuccessMessage("");
                             resetImagePreview();
                             setImageFile(null);
                             openCamera();
@@ -317,10 +355,19 @@ function CreatePostPage() {
                         </button>
                       ) : (
                         <>
-                          <button type="button" className="btn btn-warning btn-sm rounded-pill px-3 fw-semibold text-white shadow-sm" onClick={capturePhoto} disabled={!isReady}>
-                            {isReady ? 'Take photo' : 'Preparing camera...'}
+                          <button
+                            type="button"
+                            className="btn btn-warning btn-sm rounded-pill px-3 fw-semibold text-white shadow-sm"
+                            onClick={capturePhoto}
+                            disabled={!isReady}
+                          >
+                            {isReady ? "Take photo" : "Preparing camera..."}
                           </button>
-                          <button type="button" className="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold" onClick={closeCamera}>
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold"
+                            onClick={closeCamera}
+                          >
                             Close camera
                           </button>
                         </>
@@ -333,7 +380,7 @@ function CreatePostPage() {
               <div className="create-post-card__meta-strip">
                 <div>
                   <span className="create-post-card__meta-label">File</span>
-                  <strong>{imageFile?.name || 'No image selected'}</strong>
+                  <strong>{imageFile?.name || "No image selected"}</strong>
                 </div>
                 <button
                   type="button"
@@ -369,8 +416,8 @@ function CreatePostPage() {
                       placeholder="Search beer or brewery"
                       onQueryChange={(value) => {
                         setBeerQuery(value);
-                        setBeerPickerError('');
-                        setSuccessMessage('');
+                        setBeerPickerError("");
+                        setSuccessMessage("");
                       }}
                       onFocus={handleBeerInputFocus}
                       onBlur={handleBeerInputBlur}
@@ -382,7 +429,9 @@ function CreatePostPage() {
                       minCharsText="Type at least 2 characters to search beers."
                       onScroll={handleBeerResultsScroll}
                       onSelect={handleSelectBeer}
-                      renderMeta={(beer) => `${beer.brewery} · ${beer.style} · ${beer.abv}% ABV`}
+                      renderMeta={(beer) =>
+                        `${beer.brewery} · ${beer.style} · ${beer.abv}% ABV`
+                      }
                       showClearButton={Boolean(selectedBeer)}
                       onClear={handleClearBeer}
                       inputRowClassName="d-flex flex-column flex-md-row gap-3"
@@ -393,17 +442,24 @@ function CreatePostPage() {
                       helperClassName="create-post-form__helper"
                     />
 
-                    {beerPickerError ? <p className="create-post-form__helper">{beerPickerError}</p> : null}
+                    {beerPickerError ? (
+                      <p className="create-post-form__helper">
+                        {beerPickerError}
+                      </p>
+                    ) : null}
 
                     {selectedBeer ? (
                       <div className="selected-beer-card">
                         <div>
                           <strong>{selectedBeer.name}</strong>
                           <p>
-                            {selectedBeer.brewery} · {selectedBeer.style} · {selectedBeer.abv}% ABV
+                            {selectedBeer.brewery} · {selectedBeer.style} ·{" "}
+                            {selectedBeer.abv}% ABV
                           </p>
                         </div>
-                        <span className="selected-beer-card__status">Selected</span>
+                        <span className="selected-beer-card__status">
+                          Selected
+                        </span>
                       </div>
                     ) : null}
                   </div>
@@ -417,7 +473,7 @@ function CreatePostPage() {
                       value={rating}
                       onChange={(nextRating) => {
                         setRating(nextRating);
-                        setSuccessMessage('');
+                        setSuccessMessage("");
                       }}
                       disabled={isSubmitting}
                     />
@@ -426,7 +482,10 @@ function CreatePostPage() {
               </div>
 
               <div className="create-post-form__section">
-                <label htmlFor="post-description" className="create-post-form__label">
+                <label
+                  htmlFor="post-description"
+                  className="create-post-form__label"
+                >
                   Description *
                 </label>
                 <textarea
@@ -438,24 +497,40 @@ function CreatePostPage() {
                   value={description}
                   onChange={(event) => {
                     setDescription(event.target.value);
-                    setSuccessMessage('');
+                    setSuccessMessage("");
                   }}
                 />
                 <div className="create-post-form__footer-note d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3">
-                  <strong>{descriptionLength}/{DESCRIPTION_LIMIT}</strong>
+                  <strong>
+                    {descriptionLength}/{DESCRIPTION_LIMIT}
+                  </strong>
                 </div>
               </div>
 
               <div className="d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-end gap-3 mt-3">
-                <button type="button" className="btn btn-outline-secondary rounded-pill px-4 fw-semibold" onClick={handleResetForm} disabled={isSubmitting}>
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary rounded-pill px-4 fw-semibold"
+                  onClick={handleResetForm}
+                  disabled={isSubmitting}
+                >
                   Reset
                 </button>
-                <button type="button" className="btn btn-warning rounded-pill px-4 fw-semibold text-white shadow-sm" onClick={handleSubmit} disabled={isSubmitting || !!submitValidationMessage}>
-                  {isSubmitting ? 'Publishing...' : 'Publish post'}
+                <button
+                  type="button"
+                  className="btn btn-warning rounded-pill px-4 fw-semibold text-white shadow-sm"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || !!submitValidationMessage}
+                >
+                  {isSubmitting ? "Publishing..." : "Publish post"}
                 </button>
               </div>
 
-              {!error && submitValidationMessage ? <p className="form-text create-post-form__submit-helper">{submitValidationMessage}</p> : null}
+              {!error && submitValidationMessage ? (
+                <p className="form-text create-post-form__submit-helper">
+                  {submitValidationMessage}
+                </p>
+              ) : null}
             </section>
           </div>
         </div>

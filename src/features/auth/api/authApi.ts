@@ -1,7 +1,12 @@
-import { API_BASE_URL, parseJsonResponse, postJson } from '../../../shared/api/apiClient';
+import {
+  API_BASE_URL,
+  parseJsonResponse,
+  postJson,
+} from "../../../shared/api/apiClient";
 
-const AUTH_REDIRECT_PATH = import.meta.env.VITE_AUTH_REDIRECT_PATH || '/profile';
-const SIGN_IN_PATH = '/';
+const AUTH_REDIRECT_PATH =
+  import.meta.env.VITE_AUTH_REDIRECT_PATH || "/profile";
+const SIGN_IN_PATH = "/";
 
 let refreshRequest: Promise<string> | null = null;
 
@@ -37,22 +42,40 @@ type RefreshResponse = {
 };
 
 export function signUp(payload: SignUpPayload): Promise<AuthResponse> {
-  return postJson<AuthResponse>('/auth/signup', payload, 'Authentication request failed');
+  return postJson<AuthResponse>(
+    "/auth/signup",
+    payload,
+    "Authentication request failed",
+  );
 }
 
 export function signIn(payload: SignInPayload): Promise<AuthResponse> {
-  return postJson<AuthResponse>('/auth/signin', payload, 'Authentication request failed');
+  return postJson<AuthResponse>(
+    "/auth/signin",
+    payload,
+    "Authentication request failed",
+  );
 }
 
 export function signUpWithGoogle(googleToken: string): Promise<AuthResponse> {
-  return postJson<AuthResponse>('/auth/signup/google', { googleToken }, 'Authentication request failed');
+  return postJson<AuthResponse>(
+    "/auth/signup/google",
+    { googleToken },
+    "Authentication request failed",
+  );
 }
 
 export function signInWithGoogle(googleToken: string): Promise<AuthResponse> {
-  return postJson<AuthResponse>('/auth/signin/google', { googleToken }, 'Authentication request failed');
+  return postJson<AuthResponse>(
+    "/auth/signin/google",
+    { googleToken },
+    "Authentication request failed",
+  );
 }
 
-export function persistAuthSession(authResponse: AuthResponse | null | undefined): void {
+export function persistAuthSession(
+  authResponse: AuthResponse | null | undefined,
+): void {
   if (!authResponse) {
     return;
   }
@@ -60,20 +83,20 @@ export function persistAuthSession(authResponse: AuthResponse | null | undefined
   const { token, refreshToken, user } = authResponse;
 
   if (token) {
-    localStorage.setItem('token', token);
+    localStorage.setItem("token", token);
   }
 
   if (refreshToken) {
-    localStorage.setItem('refreshToken', refreshToken);
+    localStorage.setItem("refreshToken", refreshToken);
   }
 
   if (user) {
-    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem("user", JSON.stringify(user));
   }
 }
 
 export function getStoredUser<T = AuthUser>(): T | null {
-  const rawUser = localStorage.getItem('user');
+  const rawUser = localStorage.getItem("user");
 
   if (!rawUser) {
     return null;
@@ -88,19 +111,19 @@ export function getStoredUser<T = AuthUser>(): T | null {
 
 export function setStoredUser(user: AuthUser | null | undefined): void {
   if (!user) {
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
     return;
   }
 
-  localStorage.setItem('user', JSON.stringify(user));
+  localStorage.setItem("user", JSON.stringify(user));
 }
 
 export function getAuthToken(): string | null {
-  return localStorage.getItem('token');
+  return localStorage.getItem("token");
 }
 
 export function getRefreshToken(): string | null {
-  return localStorage.getItem('refreshToken');
+  return localStorage.getItem("refreshToken");
 }
 
 export function getAuthRedirectPath() {
@@ -108,13 +131,16 @@ export function getAuthRedirectPath() {
 }
 
 function setStoredTokens(token: string, refreshToken: string): void {
-  localStorage.setItem('token', token);
-  localStorage.setItem('refreshToken', refreshToken);
+  localStorage.setItem("token", token);
+  localStorage.setItem("refreshToken", refreshToken);
 }
 
-function withAuthorizationHeader(token: string, headers?: HeadersInit): Headers {
+function withAuthorizationHeader(
+  token: string,
+  headers?: HeadersInit,
+): Headers {
   const normalizedHeaders = new Headers(headers);
-  normalizedHeaders.set('Authorization', `Bearer ${token}`);
+  normalizedHeaders.set("Authorization", `Bearer ${token}`);
   return normalizedHeaders;
 }
 
@@ -128,24 +154,28 @@ export async function refreshAuthToken(): Promise<string> {
   if (!refreshRequest) {
     refreshRequest = (async () => {
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: storedRefreshToken })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: storedRefreshToken }),
       });
 
       try {
-        const payload = await parseJsonResponse<RefreshResponse>(response, 'You need to sign in again');
+        const payload = await parseJsonResponse<RefreshResponse>(
+          response,
+          "You need to sign in again",
+        );
         const token = payload?.token;
         const refreshToken = payload?.refreshToken;
 
         if (!token || !refreshToken) {
-          return handleInvalidAuthSession('Authentication refresh failed');
+          return handleInvalidAuthSession("Authentication refresh failed");
         }
 
         setStoredTokens(token, refreshToken);
         return token;
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'You need to sign in again';
+        const message =
+          error instanceof Error ? error.message : "You need to sign in again";
         return handleInvalidAuthSession(message);
       }
     })().finally(() => {
@@ -156,12 +186,15 @@ export async function refreshAuthToken(): Promise<string> {
   return refreshRequest;
 }
 
-export async function fetchWithAuth(input: string, init: RequestInit = {}): Promise<Response> {
+export async function fetchWithAuth(
+  input: string,
+  init: RequestInit = {},
+): Promise<Response> {
   const executeRequest = async (token: string) => {
     const headers = withAuthorizationHeader(token, init.headers);
     return fetch(input, {
       ...init,
-      headers
+      headers,
     });
   };
 
@@ -178,16 +211,21 @@ export async function fetchWithAuth(input: string, init: RequestInit = {}): Prom
   response = await executeRequest(refreshedToken);
 
   if (response.status === 401) {
-    return handleInvalidAuthSession('You need to sign in again');
+    return handleInvalidAuthSession("You need to sign in again");
   }
 
   return response;
 }
 
-export function handleInvalidAuthSession(message = 'You need to sign in again'): never {
+export function handleInvalidAuthSession(
+  message = "You need to sign in again",
+): never {
   logout();
 
-  if (typeof window !== 'undefined' && window.location.pathname !== SIGN_IN_PATH) {
+  if (
+    typeof window !== "undefined" &&
+    window.location.pathname !== SIGN_IN_PATH
+  ) {
     window.location.replace(SIGN_IN_PATH);
   }
 
@@ -195,11 +233,11 @@ export function handleInvalidAuthSession(message = 'You need to sign in again'):
 }
 
 export function logout(): void {
-  localStorage.removeItem('token');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('user');
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
 }
 
 export function isAuthenticated(): boolean {
-  return !!localStorage.getItem('token');
+  return !!localStorage.getItem("token");
 }

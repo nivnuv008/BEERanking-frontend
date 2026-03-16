@@ -1,11 +1,16 @@
-import { useEffect, useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
-import { Button, Card, Form } from 'react-bootstrap';
-import { useLocation, useNavigate } from 'react-router-dom';
-import FeedbackToast from '../../../shared/components/FeedbackToast';
-import { getAuthRedirectPath, persistAuthSession, signUp, signUpWithGoogle } from '../api/authApi';
-import { getGoogleIdToken } from '../api/googleAuth';
-import GoogleLogo from '../../../shared/assets/google-logo.svg';
+import { useEffect, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+import { Button, Card, Form } from "react-bootstrap";
+import { useLocation, useNavigate } from "react-router-dom";
+import FeedbackToast from "../../../shared/components/FeedbackToast";
+import {
+  getAuthRedirectPath,
+  persistAuthSession,
+  signUp,
+  signUpWithGoogle,
+} from "../api/authApi";
+import { getGoogleIdToken } from "../api/googleAuth";
+import GoogleLogo from "../../../shared/assets/google-logo.svg";
 
 type SignUpFormData = {
   username: string;
@@ -16,18 +21,18 @@ type SignUpFormData = {
 
 function SignUp() {
   const [formData, setFormData] = useState<SignUpFormData>({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     const redirectPath = getAuthRedirectPath();
 
     if (token && redirectPath !== location.pathname) {
@@ -41,49 +46,57 @@ function SignUp() {
 
     setFormData((prev) => ({
       ...prev,
-      [fieldName]: value
+      [fieldName]: value,
     }));
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
+
     // Validate inputs
-    if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Please fill in all fields');
+    if (
+      !formData.username ||
+      !formData.email ||
+      !formData.password ||
+      !formData.confirmPassword
+    ) {
+      setError("Please fill in all fields");
       return;
     }
 
     if (!emailPattern.test(formData.email.trim())) {
-      setError('Please enter a valid email address (example: name@example.com)');
+      setError(
+        "Please enter a valid email address (example: name@example.com)",
+      );
       return;
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
-    
+
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters");
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
-      setError('');
+      setError("");
 
       const response = await signUp({
         username: formData.username.trim(),
         email: formData.email.trim(),
-        password: formData.password
+        password: formData.password,
       });
 
       persistAuthSession(response);
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (submitError: unknown) {
-      const message = submitError instanceof Error ? submitError.message : 'Sign up failed';
+      const message =
+        submitError instanceof Error ? submitError.message : "Sign up failed";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -93,15 +106,20 @@ function SignUp() {
   const handleGoogleSignUp = async () => {
     try {
       setIsSubmitting(true);
-      setError('');
+      setError("");
 
-      const googleToken = await getGoogleIdToken(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+      const googleToken = await getGoogleIdToken(
+        import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      );
       const response = await signUpWithGoogle(googleToken);
 
       persistAuthSession(response);
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (googleError: unknown) {
-      const message = googleError instanceof Error ? googleError.message : 'Google sign up failed';
+      const message =
+        googleError instanceof Error
+          ? googleError.message
+          : "Google sign up failed";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -116,7 +134,7 @@ function SignUp() {
           variant="danger"
           title="Sign up failed"
           message={error}
-          onClose={() => setError('')}
+          onClose={() => setError("")}
         />
       ) : null}
 
@@ -125,14 +143,16 @@ function SignUp() {
           <Button
             variant="link"
             className="text-decoration-none p-0 mb-2"
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
           >
             ← Back
           </Button>
-          
+
           <div className="text-center mb-3">
             <h1 className="h2 fw-bold">Join BEERanking</h1>
-            <p className="text-muted">Start discovering and ranking amazing beers</p>
+            <p className="text-muted">
+              Start discovering and ranking amazing beers
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
@@ -141,8 +161,8 @@ function SignUp() {
               <Form.Control
                 id="username"
                 name="username"
-                type="text" 
-                placeholder="Choose a username" 
+                type="text"
+                placeholder="Choose a username"
                 value={formData.username}
                 onChange={handleChange}
                 disabled={isSubmitting}
@@ -154,8 +174,8 @@ function SignUp() {
               <Form.Control
                 id="email"
                 name="email"
-                type="email" 
-                placeholder="Enter your email" 
+                type="email"
+                placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
                 disabled={isSubmitting}
@@ -167,8 +187,8 @@ function SignUp() {
               <Form.Control
                 id="password"
                 name="password"
-                type="password" 
-                placeholder="Create a password (min. 6 characters)" 
+                type="password"
+                placeholder="Create a password (min. 6 characters)"
                 value={formData.password}
                 onChange={handleChange}
                 disabled={isSubmitting}
@@ -176,20 +196,27 @@ function SignUp() {
             </div>
 
             <div className="mb-3">
-              <Form.Label htmlFor="confirmPassword">Confirm Password</Form.Label>
+              <Form.Label htmlFor="confirmPassword">
+                Confirm Password
+              </Form.Label>
               <Form.Control
                 id="confirmPassword"
                 name="confirmPassword"
-                type="password" 
-                placeholder="Confirm your password" 
+                type="password"
+                placeholder="Confirm your password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 disabled={isSubmitting}
               />
             </div>
-            
-            <Button type="submit" variant="warning" className="w-100 mb-3 text-white fw-semibold border-0" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating account...' : 'Create Account'}
+
+            <Button
+              type="submit"
+              variant="warning"
+              className="w-100 mb-3 text-white fw-semibold border-0"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creating account..." : "Create Account"}
             </Button>
           </form>
 
@@ -198,7 +225,7 @@ function SignUp() {
           </div>
 
           <Button
-            type="button" 
+            type="button"
             variant="outline-secondary"
             className="w-100 d-flex align-items-center justify-content-center gap-2 mb-3"
             onClick={handleGoogleSignUp}
@@ -209,7 +236,12 @@ function SignUp() {
           </Button>
 
           <div className="text-center">
-            <p className="text-muted mb-0">Already have an account? <a href="/" className="text-decoration-none">Sign in</a></p>
+            <p className="text-muted mb-0">
+              Already have an account?{" "}
+              <a href="/" className="text-decoration-none">
+                Sign in
+              </a>
+            </p>
           </div>
         </Card.Body>
       </Card>

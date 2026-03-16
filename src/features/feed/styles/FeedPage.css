@@ -10,7 +10,7 @@
   position: relative;
   min-height: 100%;
   color: var(--feed-ink);
-  font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
   border-radius: 30px;
   overflow: hidden;
 }
@@ -102,7 +102,11 @@
 .feed-card__media {
   position: relative;
   min-height: 320px;
-  background: linear-gradient(180deg, rgba(20, 16, 14, 0.08), rgba(20, 16, 14, 0.2));
+  background: linear-gradient(
+    180deg,
+    rgba(20, 16, 14, 0.08),
+    rgba(20, 16, 14, 0.2)
+  );
 }
 
 .feed-card__image {
@@ -161,7 +165,11 @@
   margin-top: 1rem;
   padding: 1rem;
   border-radius: 22px;
-  background: linear-gradient(180deg, rgba(255, 253, 249, 0.88), rgba(251, 239, 217, 0.72));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 253, 249, 0.88),
+    rgba(251, 239, 217, 0.72)
+  );
   box-shadow: inset 0 0 0 1px rgba(124, 45, 18, 0.08);
 }
 
@@ -235,7 +243,10 @@
   justify-content: center;
   gap: 0.55rem;
   font-weight: 800;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .feed-card__action-button:hover {

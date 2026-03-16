@@ -7,8 +7,16 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --app-page-background:
-    radial-gradient(circle at top left, rgba(255, 216, 154, 0.42), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(180, 83, 9, 0.18), transparent 34%),
+    radial-gradient(
+      circle at top left,
+      rgba(255, 216, 154, 0.42),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(180, 83, 9, 0.18),
+      transparent 34%
+    ),
     linear-gradient(140deg, #fff8ef 0%, #f2dfc2 44%, #eac591 100%);
 }
 

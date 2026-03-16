@@ -7,7 +7,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import { getAuthToken } from '../../auth/api/authApi';
 import { getProfileImageUrl } from '../../profile/api/profileApi';
 import FeedbackToast from '../../../shared/components/FeedbackToast';
-import { createLocalComment, getFeedPostById, getPostComments, type FeedComment, type FeedPost } from '../api/feedApi';
+import { createPostComment, getFeedPostById, getPostComments, type FeedComment, type FeedPost } from '../api/feedApi';
 import PostCard from '../components/PostCard';
 import { usePostLikeState } from '../hooks/usePostLikeState';
 import '../styles/FeedPage.css';
@@ -45,6 +45,7 @@ function FeedCommentsPage() {
   const [post, setPost] = useState<FeedPost | null>(locationPost);
   const [comments, setComments] = useState<FeedComment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [commentMessage, setCommentMessage] = useState('');
   const [error, setError] = useState('');
@@ -107,7 +108,7 @@ function FeedCommentsPage() {
     );
   }
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!postId) {
       setError('Post id is missing');
       return;
@@ -121,11 +122,24 @@ function FeedCommentsPage() {
       return;
     }
 
-    const createdComment = createLocalComment(postId, normalizedText);
-    setComments((current) => [createdComment, ...current]);
-    setCommentText('');
-    setCommentMessage('Comment added locally until backend comments are ready.');
-    setError('');
+    try {
+      setIsSubmittingComment(true);
+      const createdComment = await createPostComment(postId, normalizedText);
+      setComments((current) => [createdComment, ...current]);
+      setPost((currentPost) => (currentPost ? {
+        ...currentPost,
+        commentCount: currentPost.commentCount + 1,
+      } : currentPost));
+      setCommentText('');
+      setCommentMessage('Comment added.');
+      setError('');
+    } catch (submitError: unknown) {
+      const message = submitError instanceof Error ? submitError.message : 'Failed to add comment';
+      setError(message);
+      setCommentMessage('');
+    } finally {
+      setIsSubmittingComment(false);
+    }
   };
 
   return (
@@ -178,7 +192,7 @@ function FeedCommentsPage() {
               <p className="feed-comments-page__eyebrow mb-1">Add comment</p>
               <h2 className="feed-comments-page__composer-title">Join the thread.</h2>
             </div>
-            <span className="small text-body-secondary">Stored locally for now</span>
+            <span className="small text-body-secondary">Newest comments appear first</span>
           </div>
 
           <Form.Control
@@ -191,13 +205,15 @@ function FeedCommentsPage() {
             onChange={(event) => {
               setCommentText(event.target.value);
               setCommentMessage('');
+              setError('');
             }}
+            disabled={isSubmittingComment}
           />
 
           <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3">
             <span className="small text-body-secondary">{commentText.trim().length}/5000</span>
-            <Button type="button" variant="warning" className="fw-semibold text-white border-0 rounded-pill px-4" onClick={handleAddComment}>
-              Add comment
+            <Button type="button" variant="warning" className="fw-semibold text-white border-0 rounded-pill px-4" onClick={() => void handleAddComment()} disabled={isSubmittingComment}>
+              {isSubmittingComment ? 'Adding...' : 'Add comment'}
             </Button>
           </div>
           </Card.Body>
@@ -223,7 +239,7 @@ function FeedCommentsPage() {
                 </Card.Body>
               </Card>
             );
-          }) : <div className="feed-empty-state">No comments yet. The screen is ready for the real backend comments flow.</div>}
+          }) : <div className="feed-empty-state">No comments yet. Be the first to add one.</div>}
         </div>
       </div>
     </section>

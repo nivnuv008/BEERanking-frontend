@@ -12,7 +12,7 @@ import {
   signIn,
   signInWithGoogle,
 } from "../api/authApi";
-import { getGoogleIdToken } from "../api/googleAuth";
+import { useGoogleAuth } from "../hooks/useGoogleAuth";
 import GoogleLogo from "../../../shared/assets/google-logo.svg";
 
 type SignInFormData = {
@@ -39,6 +39,12 @@ function SignIn() {
     }));
   };
 
+  const handleGoogleAuth = useGoogleAuth({
+    setIsSubmitting,
+    setError,
+    navigate,
+  });
+
   const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -60,25 +66,6 @@ function SignIn() {
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (submitError: unknown) {
       setError(getErrorMessage(submitError, "Sign in failed"));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsSubmitting(true);
-      setError("");
-
-      const googleToken = await getGoogleIdToken(
-        import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      );
-      const response = await signInWithGoogle(googleToken);
-
-      persistAuthSession(response);
-      navigate(getAuthRedirectPath(), { replace: true });
-    } catch (googleError: unknown) {
-      setError(getErrorMessage(googleError, "Google sign in failed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -171,7 +158,9 @@ function SignIn() {
                   type="button"
                   variant="outline-secondary"
                   className="w-100 d-flex align-items-center justify-content-center gap-2 mb-3"
-                  onClick={handleGoogleSignIn}
+                  onClick={() =>
+                    handleGoogleAuth(signInWithGoogle, "Google sign in failed")
+                  }
                   disabled={isSubmitting}
                 >
                   <img src={GoogleLogo} alt="Google" width="18" height="18" />

@@ -6,7 +6,7 @@ import AppLayout from "../features/layout/pages/AppLayout";
 import CreatePostPage from "../features/posts/pages/CreatePostPage";
 import MyPostsPage from "../features/posts/pages/MyPostsPage";
 import ProfilePage from "../features/profile/pages/ProfilePage";
-import WelcomePage from "../features/welcome/pages/WelcomePage";
+import SignIn from "../features/auth/pages/SignIn";
 import { AISommelier } from "../features/aisommelier/pages/AISommelier";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -14,7 +14,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<WelcomePage />} />
+        <Route path="/" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>

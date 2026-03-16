@@ -5,7 +5,7 @@ import {
   askSommelier,
   type AskSommelierResponse,
   type RecommendationType,
-} from "../api/AISommelierApi";
+} from "../api/aisommelierApi";
 import BeerCard from "../components/BeerCard";
 import "../styles/AISommelier.css";
 

@@ -4,7 +4,7 @@ import {
   parseJsonResponse,
   resolveBackendAssetUrl,
 } from "../../../shared/api/apiClient";
-import type { Beer } from "../../../shared/api/beerApi";
+import type { Beer } from "../../../shared/types/beerType";
 import { fetchWithAuth, setStoredUser } from "../../auth/api/authApi";
 
 export type UserProfile = {

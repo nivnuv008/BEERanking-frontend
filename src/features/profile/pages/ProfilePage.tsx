@@ -7,7 +7,7 @@ import CameraCapture, {
 } from "../../../shared/components/CameraCapture";
 import BeerSearchPicker from "../../../shared/components/BeerSearchPicker";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
-import type { Beer } from "../../../shared/api/beerApi";
+import type { Beer } from "../../../shared/types/beerType";
 import { useBeerPickerData } from "../../../shared/hooks/useBeerPickerData";
 import "../styles/ProfilePage.css";
 import { getStoredUser, logout } from "../../auth/api/authApi";

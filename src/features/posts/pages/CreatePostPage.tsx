@@ -10,7 +10,7 @@ import FeedbackToast from "../../../shared/components/FeedbackToast";
 import { useBeerPickerData } from "../../../shared/hooks/useBeerPickerData";
 import PostRatingField from "../components/PostRatingField";
 import "../styles/CreatePostPage.css";
-import { type Beer } from "../../../shared/api/beerApi";
+import { type Beer } from "../../../shared/types/beerType";
 import { createPost } from "../api/postApi";
 import { POST_DESCRIPTION_LIMIT } from "../constants/postConstants";
 

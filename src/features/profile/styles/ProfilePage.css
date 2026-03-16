@@ -134,8 +134,8 @@
   display: grid;
   gap: 0.4rem;
   margin-top: 0.55rem;
-  max-height: 118px;
-  overflow: hidden;
+  max-height: 260px;
+  overflow-y: auto;
 }
 
 .profile-card__search-result {

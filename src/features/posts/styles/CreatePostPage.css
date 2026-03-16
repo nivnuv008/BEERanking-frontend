@@ -215,13 +215,6 @@
   text-transform: uppercase;
 }
 
-.create-post-form__todo {
-  margin: 0 0 0.35rem;
-  color: var(--create-post-accent-deep);
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
 .create-post-search__input,
 .create-post-form__textarea {
   border-radius: 16px;
@@ -272,7 +265,7 @@
   display: grid;
   gap: 0.4rem;
   margin-top: 0.45rem;
-  max-height: 100px;
+  max-height: 260px;
   overflow: auto;
 }
 
@@ -295,11 +288,6 @@
   margin-top: 0.15rem;
   color: var(--create-post-muted);
   font-size: 0.8rem;
-}
-
-.create-post-search-result--active {
-  border-color: rgba(184, 84, 24, 0.38);
-  background: rgba(255, 244, 224, 0.92);
 }
 
 .create-post-form__textarea {

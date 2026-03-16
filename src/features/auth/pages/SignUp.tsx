@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Button, Card, Form } from "react-bootstrap";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
 import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
 import {
@@ -30,16 +30,6 @@ function SignUp() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const redirectPath = getAuthRedirectPath();
-
-    if (token && redirectPath !== location.pathname) {
-      navigate(redirectPath, { replace: true });
-    }
-  }, [location.pathname, navigate]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

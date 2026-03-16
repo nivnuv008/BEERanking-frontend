@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
@@ -7,9 +7,24 @@ import Spinner from 'react-bootstrap/Spinner';
 import { getAuthToken } from '../../auth/api/authApi';
 import { getProfileImageUrl } from '../../profile/api/profileApi';
 import FeedbackToast from '../../../shared/components/FeedbackToast';
-import { createLocalComment, getFeedPostById, getPostComments, type FeedComment, type FeedPost } from '../api/feedApi';
+import { createPostComment, getFeedPostById, getPostComments, type FeedComment, type FeedPost } from '../api/feedApi';
 import PostCard from '../components/PostCard';
 import '../styles/FeedPage.css';
+
+const PAGE_SIZE = 20;
+
+function mergeComments(currentComments: FeedComment[], nextComments: FeedComment[]): FeedComment[] {
+  const existingIds = new Set(currentComments.map((comment) => comment._id));
+  const merged = [...currentComments];
+
+  nextComments.forEach((comment) => {
+    if (!existingIds.has(comment._id)) {
+      merged.push(comment);
+    }
+  });
+
+  return merged;
+}
 
 type FeedCommentsLocationState = {
   post?: FeedPost;
@@ -35,6 +50,7 @@ function getInitials(username: string): string {
 
 function FeedCommentsPage() {
   const navigate = useNavigate();
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { postId } = useParams();
   const location = useLocation();
   const locationState = location.state as FeedCommentsLocationState | null;
@@ -43,7 +59,12 @@ function FeedCommentsPage() {
   const returnLabel = locationState?.returnLabel ?? 'Back to feed';
   const [post, setPost] = useState<FeedPost | null>(locationPost);
   const [comments, setComments] = useState<FeedComment[]>([]);
+  const [nextSkip, setNextSkip] = useState(0);
+  const [totalComments, setTotalComments] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [commentMessage, setCommentMessage] = useState('');
   const [error, setError] = useState('');
@@ -63,9 +84,9 @@ function FeedCommentsPage() {
     const loadScreen = async () => {
       try {
         setIsLoading(true);
-        const [resolvedPost, resolvedComments] = await Promise.all([
+        const [resolvedPost, initialComments] = await Promise.all([
           locationPost ?? getFeedPostById(postId),
-          getPostComments(postId),
+          getPostComments(postId, { skip: 0, limit: PAGE_SIZE }),
         ]);
 
         if (!resolvedPost) {
@@ -74,7 +95,11 @@ function FeedCommentsPage() {
         }
 
         setPost(resolvedPost);
-        setComments(resolvedComments.items);
+        syncPosts(resolvedPost ? [resolvedPost] : [], true);
+        setComments(initialComments.items);
+        setNextSkip(initialComments.nextSkip);
+        setTotalComments(initialComments.total);
+        setHasMore(initialComments.hasMore);
         setError('');
       } catch (loadError: unknown) {
         const message = loadError instanceof Error ? loadError.message : 'Failed to load comments screen';
@@ -87,6 +112,59 @@ function FeedCommentsPage() {
     void loadScreen();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, postId]);
+
+  const loadMoreComments = async () => {
+    if (!postId || isLoading || isLoadingMore || !hasMore) {
+      return;
+    }
+
+    try {
+      setIsLoadingMore(true);
+      const result = await getPostComments(postId, { skip: nextSkip, limit: PAGE_SIZE });
+
+      setComments((currentComments) => mergeComments(currentComments, result.items));
+      setNextSkip(result.nextSkip);
+      setTotalComments(result.total);
+      setHasMore(result.hasMore);
+      setError('');
+    } catch (loadError: unknown) {
+      const message = loadError instanceof Error ? loadError.message : 'Failed to load more comments';
+      setError(message);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+
+    if (!sentinel || isLoading || isLoadingMore || !hasMore || error) {
+      return;
+    }
+
+    const root = document.querySelector('.app-shell__content');
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+
+        if (entry?.isIntersecting) {
+          void loadMoreComments();
+        }
+      },
+      {
+        root,
+        rootMargin: '0px 0px 260px 0px',
+        threshold: 0,
+      },
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [error, hasMore, isLoading, isLoadingMore, nextSkip]);
 
   if (isLoading) {
     return (
@@ -104,7 +182,7 @@ function FeedCommentsPage() {
     );
   }
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!postId) {
       setError('Post id is missing');
       return;
@@ -118,11 +196,26 @@ function FeedCommentsPage() {
       return;
     }
 
-    const createdComment = createLocalComment(postId, normalizedText);
-    setComments((current) => [createdComment, ...current]);
-    setCommentText('');
-    setCommentMessage('Comment added locally until backend comments are ready.');
-    setError('');
+    try {
+      setIsSubmittingComment(true);
+      const createdComment = await createPostComment(postId, normalizedText);
+      setComments((current) => [createdComment, ...current]);
+      setNextSkip((current) => current + 1);
+      setTotalComments((current) => current + 1);
+      setPost((currentPost) => (currentPost ? {
+        ...currentPost,
+        commentCount: currentPost.commentCount + 1,
+      } : currentPost));
+      setCommentText('');
+      setCommentMessage('Comment added.');
+      setError('');
+    } catch (submitError: unknown) {
+      const message = submitError instanceof Error ? submitError.message : 'Failed to add comment';
+      setError(message);
+      setCommentMessage('');
+    } finally {
+      setIsSubmittingComment(false);
+    }
   };
 
   return (
@@ -169,7 +262,7 @@ function FeedCommentsPage() {
               <p className="feed-comments-page__eyebrow mb-1">Add comment</p>
               <h2 className="feed-comments-page__composer-title">Join the thread.</h2>
             </div>
-            <span className="small text-body-secondary">Stored locally for now</span>
+            <span className="small text-body-secondary">Newest comments appear first</span>
           </div>
 
           <Form.Control
@@ -182,13 +275,15 @@ function FeedCommentsPage() {
             onChange={(event) => {
               setCommentText(event.target.value);
               setCommentMessage('');
+              setError('');
             }}
+            disabled={isSubmittingComment}
           />
 
           <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3">
             <span className="small text-body-secondary">{commentText.trim().length}/5000</span>
-            <Button type="button" variant="warning" className="fw-semibold text-white border-0 rounded-pill px-4" onClick={handleAddComment}>
-              Add comment
+            <Button type="button" variant="warning" className="fw-semibold text-white border-0 rounded-pill px-4" onClick={() => void handleAddComment()} disabled={isSubmittingComment}>
+              {isSubmittingComment ? 'Adding...' : 'Add comment'}
             </Button>
           </div>
           </Card.Body>
@@ -214,8 +309,25 @@ function FeedCommentsPage() {
                 </Card.Body>
               </Card>
             );
-          }) : <div className="feed-empty-state">No comments yet. The screen is ready for the real backend comments flow.</div>}
+          }) : <div className="feed-empty-state">No comments yet. Be the first to add one.</div>}
+
+          {!isLoading && !error && comments.length > 0 ? (
+            <div className="small text-body-secondary text-end">Loaded {comments.length} of {totalComments} comments</div>
+          ) : null}
         </div>
+
+        <div className="d-flex justify-content-center pt-1">
+          {isLoadingMore ? (
+            <Card className="feed-surface-card border-0 text-center mt-3">
+              <Card.Body className="d-flex align-items-center justify-content-center gap-3 py-3">
+                <Spinner animation="border" role="status" size="sm" />
+                <span>Loading more comments...</span>
+              </Card.Body>
+            </Card>
+          ) : null}
+        </div>
+
+        <div ref={sentinelRef} className="feed-page__sentinel" aria-hidden="true" />
       </div>
     </section>
   );

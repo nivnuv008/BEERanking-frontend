@@ -5,7 +5,6 @@ import { getAuthToken } from '../../auth/api/authApi';
 import FeedbackToast from '../../../shared/components/FeedbackToast';
 import { getFeedPosts, type FeedPost } from '../api/feedApi';
 import PostCard from '../components/PostCard';
-import { usePostLikeState } from '../hooks/usePostLikeState';
 import '../styles/FeedPage.css';
 
 const PAGE_SIZE = 4;
@@ -33,7 +32,6 @@ function FeedPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState('');
-  const { likeStateById, likeBusyId, syncPosts, toggleLike } = usePostLikeState(posts);
 
   useEffect(() => {
     if (!getAuthToken()) {
@@ -54,7 +52,6 @@ function FeedPage() {
       const result = await getFeedPosts({ skip: targetSkip, limit: PAGE_SIZE });
 
       setPosts((currentPosts) => (reset ? result.items : mergePosts(currentPosts, result.items)));
-      syncPosts(result.items, reset);
       setNextSkip(result.nextSkip);
       setTotalPosts(result.total);
       setHasMore(result.hasMore);
@@ -150,27 +147,19 @@ function FeedPage() {
         ) : null}
 
         <div className="d-grid gap-3">
-          {posts.map((post) => {
-            const currentLikeState = likeStateById[post._id] ?? { liked: false, likeCount: post.likeCount };
-
-            return (
-              <PostCard
-                key={post._id}
-                post={post}
-                liked={currentLikeState.liked}
-                likeCount={currentLikeState.likeCount}
-                likeDisabled={likeBusyId === post._id}
-                onToggleLike={toggleLike}
-                onOpenComments={(selectedPost) => navigate(`/posts/${selectedPost._id}/comments`, {
-                  state: {
-                    post: selectedPost,
-                    returnTo: '/feed',
-                    returnLabel: 'Back to feed',
-                  },
-                })}
-              />
-            );
-          })}
+          {posts.map((post) => (
+            <PostCard
+              key={post._id}
+              post={post}
+              onOpenComments={(selectedPost) => navigate(`/posts/${selectedPost._id}/comments`, {
+                state: {
+                  post: selectedPost,
+                  returnTo: '/feed',
+                  returnLabel: 'Back to feed',
+                },
+              })}
+            />
+          ))}
         </div>
 
         {!posts.length && !error ? (

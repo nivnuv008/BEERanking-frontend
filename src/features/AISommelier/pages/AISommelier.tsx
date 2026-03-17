@@ -78,17 +78,13 @@ export function AISommelier() {
           <h1 className="sommelier-page__headline">
             AI <span>Sommelier</span>
           </h1>
-          <p className="sommelier-page__subtitle">
-            Describe your mood, occasion, or taste — the sommelier will find
-            your perfect beer.
-          </p>
         </div>
 
         <form className="sommelier-prompt-card" onSubmit={handleSubmit}>
           <Form.Label className="sommelier-prompt-card__label">
             Your request
           </Form.Label>
-          <InputGroup>
+          <InputGroup className="sommelier-prompt-card__group">
             <Form.Control
               type="text"
               className="sommelier-prompt-card__textarea"

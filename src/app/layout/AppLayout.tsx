@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
+import { logout } from "../../features/auth/api/authApi";
 import "./AppLayout.css";
 
 type CommentsLocationState = {
@@ -11,6 +13,7 @@ type CommentsLocationState = {
 
 function AppLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
   const location = useLocation();
   const locationState = location.state as CommentsLocationState | null;
 
@@ -29,6 +32,13 @@ function AppLayout() {
 
   const handleNavigate = () => {
     setIsMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    setIsMenuOpen(false);
+    void logout().finally(() => {
+      navigate("/", { replace: true });
+    });
   };
 
   return (
@@ -87,6 +97,15 @@ function AppLayout() {
                   Profile
                 </NavLink>
               </Nav>
+
+              <Button
+                type="button"
+                variant="light"
+                className="app-navbar__logout-button rounded-pill px-3 fw-semibold"
+                onClick={handleLogout}
+              >
+                Log out
+              </Button>
             </Navbar.Collapse>
 
             <img

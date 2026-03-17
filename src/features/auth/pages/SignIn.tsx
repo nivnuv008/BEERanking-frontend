@@ -76,8 +76,9 @@ function SignIn() {
   };
 
   const handleClearSession = () => {
-    logout();
-    window.location.reload();
+    void logout().finally(() => {
+      window.location.reload();
+    });
   };
 
   const showClearSession = Boolean(localStorage.getItem("token"));

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Badge, Button, Card, Form, Spinner } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
 import CameraCapture, {
   type CameraCaptureHandle,
 } from "../../../shared/components/CameraCapture";
@@ -11,7 +10,7 @@ import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
 import type { Beer } from "../../../shared/types/beerType";
 import { useBeerPickerData } from "../../../shared/hooks/useBeerPickerData";
 import "../styles/ProfilePage.css";
-import { getStoredUser, logout } from "../../auth/api/authApi";
+import { getStoredUser } from "../../auth/api/authApi";
 import {
   getCurrentUserProfile,
   getProfileImageUrl,
@@ -29,7 +28,6 @@ type EditableProfile = {
 const MAX_FAVORITE_BEERS = 3;
 
 function ProfilePage() {
-  const navigate = useNavigate();
   const cameraCaptureRef = useRef<CameraCaptureHandle | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(() =>
     getStoredUser<UserProfile>(),
@@ -187,11 +185,6 @@ function ProfilePage() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/", { replace: true });
-  };
-
   const visibleProfileImage = isEditing
     ? draft.previewUrl
     : getProfileImageUrl(profile?.profilePic);
@@ -234,18 +227,21 @@ function ProfilePage() {
           </div>
 
           <div className="d-flex flex-wrap align-self-start justify-content-start justify-content-lg-end gap-3">
+            {isEditing ? (
+              <Button
+                type="button"
+                variant="warning"
+                className="rounded-pill px-3 fw-semibold text-white profile-page__primary-action"
+                onClick={handleSave}
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save changes"}
+              </Button>
+            ) : null}
             <Button
               type="button"
-              variant="light"
-              className="rounded-pill px-3 fw-semibold profile-page__ghost-action"
-              onClick={handleLogout}
-            >
-              Log out
-            </Button>
-            <Button
-              type="button"
-              variant="warning"
-              className="rounded-pill px-3 fw-semibold text-white profile-page__primary-action"
+              variant={isEditing ? "light" : "warning"}
+              className={`rounded-pill px-3 fw-semibold ${isEditing ? "profile-page__ghost-action" : "text-white profile-page__primary-action"}`}
               onClick={handleEditToggle}
             >
               {isEditing ? "Cancel" : "Edit profile"}
@@ -315,6 +311,14 @@ function ProfilePage() {
                         )}
                       </div>
 
+                      {!isOpen && !visibleProfileImage ? (
+                        <p className="profile-card__photo-hint">
+                          {isEditing
+                            ? "Add a profile picture to personalize your profile."
+                            : "No profile picture yet. Edit your profile to add one."}
+                        </p>
+                      ) : null}
+
                       {isEditing ? (
                         <div className="d-flex flex-column align-items-center gap-2 mb-2">
                           <div className="d-flex flex-wrap justify-content-center gap-2">
@@ -382,17 +386,6 @@ function ProfilePage() {
                   <p className="profile-card__email">{profile.email}</p>
                 </div>
 
-                {isEditing ? (
-                  <Button
-                    type="button"
-                    variant="warning"
-                    className="profile-page__save-button rounded-pill fw-semibold text-white"
-                    onClick={handleSave}
-                    disabled={isSaving}
-                  >
-                    {isSaving ? "Saving..." : "Save changes"}
-                  </Button>
-                ) : null}
               </Card.Body>
             </Card>
           </div>

@@ -45,6 +45,19 @@
   flex: 1;
 }
 
+.app-navbar__logout-button {
+  border-color: rgba(123, 52, 30, 0.16);
+  color: #6b4f38;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.app-navbar__logout-button:hover,
+.app-navbar__logout-button:focus-visible {
+  color: #7b341e;
+  background: rgba(255, 244, 231, 0.95);
+  border-color: rgba(123, 52, 30, 0.24);
+}
+
 .app-navbar__logo {
   width: 42px;
   height: 42px;
@@ -87,8 +100,16 @@
 }
 
 @media (max-width: 991px) {
+  .app-navbar__collapse {
+    gap: 0.75rem;
+  }
+
   .app-navbar__link {
     display: block;
+  }
+
+  .app-navbar__logout-button {
+    width: 100%;
   }
 
   .app-navbar__logo {

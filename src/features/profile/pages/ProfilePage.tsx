@@ -188,8 +188,9 @@ function ProfilePage() {
   };
 
   const handleLogout = () => {
-    logout();
-    navigate("/", { replace: true });
+    void logout().finally(() => {
+      navigate("/", { replace: true });
+    });
   };
 
   const visibleProfileImage = isEditing

@@ -135,6 +135,12 @@ function setStoredTokens(token: string, refreshToken: string): void {
   localStorage.setItem("refreshToken", refreshToken);
 }
 
+function clearStoredAuthSession(): void {
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
+}
+
 function withAuthorizationHeader(
   token: string,
   headers?: HeadersInit,
@@ -220,7 +226,7 @@ export async function fetchWithAuth(
 export function handleInvalidAuthSession(
   message = "You need to sign in again",
 ): never {
-  logout();
+  clearStoredAuthSession();
 
   if (
     typeof window !== "undefined" &&
@@ -232,10 +238,22 @@ export function handleInvalidAuthSession(
   throw new Error(message);
 }
 
-export function logout(): void {
-  localStorage.removeItem("token");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("user");
+export async function logout(): Promise<void> {
+  const refreshToken = getRefreshToken();
+
+  try {
+    if (refreshToken) {
+      await postJson<{ message?: string }>(
+        "/auth/signout",
+        { refreshToken },
+        "Sign out failed",
+      );
+    }
+  } catch {
+    // Always clear local auth state, even if server revocation fails.
+  } finally {
+    clearStoredAuthSession();
+  }
 }
 
 export function isAuthenticated(): boolean {

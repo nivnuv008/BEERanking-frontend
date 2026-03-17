@@ -4,8 +4,7 @@ import {
   postJson,
 } from "../../../shared/api/apiClient";
 
-const AUTH_REDIRECT_PATH =
-  import.meta.env.VITE_AUTH_REDIRECT_PATH || "/profile";
+const AUTH_REDIRECT_PATH = "/feed";
 const SIGN_IN_PATH = "/";
 
 let refreshRequest: Promise<string> | null = null;

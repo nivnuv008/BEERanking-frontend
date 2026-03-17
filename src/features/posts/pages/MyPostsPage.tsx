@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Badge, Button, Card, Form, Spinner } from "react-bootstrap";
+import { Button, Card, Form, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import CameraCapture, {
   type CameraCaptureHandle,
@@ -594,18 +594,6 @@ function MyPostsPage() {
               Your pours, your notes, your edits.
             </h1>
           </div>
-        </div>
-
-        <div className="d-flex flex-wrap gap-2 mb-3">
-          {editDraft ? (
-            <Badge
-              pill
-              className="px-3 py-2 feed-pill my-posts-page__pill-active"
-            >
-              Editing
-              <strong className="ms-2">1</strong>
-            </Badge>
-          ) : null}
         </div>
 
         {error ? (

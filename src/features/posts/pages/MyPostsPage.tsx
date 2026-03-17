@@ -2,21 +2,23 @@ import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Badge, Button, Card, Form, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { getAuthToken } from "../../auth/api/authApi";
 import CameraCapture, {
   type CameraCaptureHandle,
-} from "../../camera/CameraCapture";
-import PostCard from "../../feed/components/PostCard";
+} from "../../../shared/components/CameraCapture";
+import PostCard from "../components/PostCard";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
-import type { FeedPost } from "../../feed/api/feedApi";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
+import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
+import { mergeById } from "../../../shared/utils/mergeById";
+import type { FeedPost } from "../types/post";
 import PostRatingField from "../components/PostRatingField";
 import ConfirmDialog from "../../../shared/components/ConfirmDialog";
-import "../../feed/styles/FeedPage.css";
+import "../styles/FeedPage.css";
 import { deletePost, getMyPosts, updatePost } from "../api/postApi";
 import "../styles/MyPostsPage.css";
+import { POST_DESCRIPTION_LIMIT } from "../constants/postConstants";
 
 const PAGE_SIZE = 4;
-const DESCRIPTION_LIMIT = 1000;
 
 type EditDraft = {
   postId: string;
@@ -26,25 +28,8 @@ type EditDraft = {
   imagePreview: string;
 };
 
-function mergePosts(
-  currentPosts: FeedPost[],
-  nextPosts: FeedPost[],
-): FeedPost[] {
-  const existingIds = new Set(currentPosts.map((post) => post._id));
-  const merged = [...currentPosts];
-
-  nextPosts.forEach((post) => {
-    if (!existingIds.has(post._id)) {
-      merged.push(post);
-    }
-  });
-
-  return merged;
-}
-
 function MyPostsPage() {
   const navigate = useNavigate();
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const previewUrlRef = useRef<string | null>(null);
   const cameraCaptureRef = useRef<CameraCaptureHandle | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -61,12 +46,6 @@ function MyPostsPage() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
-
-  useEffect(() => {
-    if (!getAuthToken()) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate]);
 
   useEffect(() => {
     return () => {
@@ -133,18 +112,14 @@ function MyPostsPage() {
       const result = await getMyPosts({ skip: targetSkip, limit: PAGE_SIZE });
 
       setPosts((currentPosts) =>
-        reset ? result.items : mergePosts(currentPosts, result.items),
+        reset ? result.items : mergeById(currentPosts, result.items),
       );
       setNextSkip(result.nextSkip);
       setTotalPosts(result.total);
       setHasMore(result.hasMore);
       setError("");
     } catch (loadError: unknown) {
-      const message =
-        loadError instanceof Error
-          ? loadError.message
-          : "Failed to load your posts";
-      setError(message);
+      setError(getErrorMessage(loadError, "Failed to load your posts"));
     } finally {
       setIsInitialLoading(false);
       setIsLoadingMore(false);
@@ -156,36 +131,10 @@ function MyPostsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-
-    if (!sentinel || !hasMore || isInitialLoading || isLoadingMore || error) {
-      return;
-    }
-
-    const root = document.querySelector(".app-shell__content");
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-
-        if (entry?.isIntersecting) {
-          void loadPosts(false);
-        }
-      },
-      {
-        root,
-        rootMargin: "0px 0px 260px 0px",
-        threshold: 0,
-      },
-    );
-
-    observer.observe(sentinel);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [error, hasMore, isInitialLoading, isLoadingMore, nextSkip]);
+  const { sentinelRef } = useInfiniteScroll({
+    enabled: hasMore && !isInitialLoading && !isLoadingMore && !error,
+    onIntersect: () => loadPosts(false),
+  });
 
   useEffect(() => {
     if (editDraft && !posts.some((post) => post._id === editDraft.postId)) {
@@ -398,7 +347,7 @@ function MyPostsPage() {
                       id="my-post-description"
                       className="feed-textarea"
                       rows={6}
-                      maxLength={DESCRIPTION_LIMIT}
+                      maxLength={POST_DESCRIPTION_LIMIT}
                       value={editDraft.description}
                       onChange={(event) => {
                         setEditDraft((currentDraft) =>
@@ -416,7 +365,7 @@ function MyPostsPage() {
                     <div className="my-posts-editor__meta-row">
                       <span>
                         {editDraft.description.trim().length}/
-                        {DESCRIPTION_LIMIT}
+                        {POST_DESCRIPTION_LIMIT}
                       </span>
                       <span>
                         {editDraft.imageFile
@@ -513,8 +462,8 @@ function MyPostsPage() {
       return "Description is required";
     }
 
-    if (trimmedDescription.length > DESCRIPTION_LIMIT) {
-      return `Description must be ${DESCRIPTION_LIMIT} characters or less`;
+    if (trimmedDescription.length > POST_DESCRIPTION_LIMIT) {
+      return `Description must be ${POST_DESCRIPTION_LIMIT} characters or less`;
     }
 
     return "";
@@ -564,11 +513,7 @@ function MyPostsPage() {
       clearEditor();
       setSuccessMessage(response.message || "Post updated");
     } catch (saveError: unknown) {
-      const message =
-        saveError instanceof Error
-          ? saveError.message
-          : "Failed to update post";
-      setError(message);
+      setError(getErrorMessage(saveError, "Failed to update post"));
     } finally {
       setIsSaving(false);
     }
@@ -606,11 +551,7 @@ function MyPostsPage() {
       setPostPendingDelete(null);
       setSuccessMessage(response.message || "Post deleted");
     } catch (deleteError: unknown) {
-      const message =
-        deleteError instanceof Error
-          ? deleteError.message
-          : "Failed to delete post";
-      setError(message);
+      setError(getErrorMessage(deleteError, "Failed to delete post"));
     } finally {
       setDeletingPostId(null);
     }

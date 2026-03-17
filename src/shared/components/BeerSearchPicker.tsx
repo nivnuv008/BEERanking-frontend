@@ -1,5 +1,5 @@
 import type { UIEvent } from "react";
-import type { Beer } from "../api/beerApi";
+import type { Beer } from "../types/beerType";
 
 type BeerSearchPickerProps = {
   inputId: string;

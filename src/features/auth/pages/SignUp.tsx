@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Button, Card, Form } from "react-bootstrap";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
 import {
   getAuthRedirectPath,
   persistAuthSession,
   signUp,
   signUpWithGoogle,
 } from "../api/authApi";
-import { getGoogleIdToken } from "../api/googleAuth";
+import { useGoogleAuth } from "../hooks/useGoogleAuth";
 import GoogleLogo from "../../../shared/assets/google-logo.svg";
 
 type SignUpFormData = {
@@ -29,16 +30,12 @@ function SignUp() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const redirectPath = getAuthRedirectPath();
-
-    if (token && redirectPath !== location.pathname) {
-      navigate(redirectPath, { replace: true });
-    }
-  }, [location.pathname, navigate]);
+  const handleGoogleAuth = useGoogleAuth({
+    setIsSubmitting,
+    setError,
+    navigate,
+  });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -95,32 +92,7 @@ function SignUp() {
       persistAuthSession(response);
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (submitError: unknown) {
-      const message =
-        submitError instanceof Error ? submitError.message : "Sign up failed";
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleSignUp = async () => {
-    try {
-      setIsSubmitting(true);
-      setError("");
-
-      const googleToken = await getGoogleIdToken(
-        import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      );
-      const response = await signUpWithGoogle(googleToken);
-
-      persistAuthSession(response);
-      navigate(getAuthRedirectPath(), { replace: true });
-    } catch (googleError: unknown) {
-      const message =
-        googleError instanceof Error
-          ? googleError.message
-          : "Google sign up failed";
-      setError(message);
+      setError(getErrorMessage(submitError, "Sign up failed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -228,7 +200,9 @@ function SignUp() {
             type="button"
             variant="outline-secondary"
             className="w-100 d-flex align-items-center justify-content-center gap-2 mb-3"
-            onClick={handleGoogleSignUp}
+            onClick={() =>
+              handleGoogleAuth(signUpWithGoogle, "Google sign up failed")
+            }
             disabled={isSubmitting}
           >
             <img src={GoogleLogo} alt="Google" width="18" height="18" />

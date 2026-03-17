@@ -1,13 +1,13 @@
-import { API_BASE_URL, parseJsonResponse } from "./apiClient";
-
-export type Beer = {
-  _id: string;
-  name: string;
-  brewery: string;
-  style: string;
-  abv: number;
-  description?: string;
-};
+import {
+  API_BASE_URL,
+  parseJsonResponse,
+  BackendPaginatedResponse,
+  toPageRequest,
+  toPageResult,
+  PagingParams,
+  PageResult,
+} from "./apiClient";
+import type { Beer } from "../types/beerType";
 
 type BeerSearchApiItem = {
   beerId?: string;
@@ -19,65 +19,37 @@ type BeerSearchApiItem = {
   description?: string;
 };
 
-type BackendPagination = {
-  page: number;
-  limit: number;
-  total: number;
-  pages: number;
-};
-
-export type BeerPageResult = {
-  items: Beer[];
-  page: number;
-  hasMore: boolean;
-};
-
 export async function getBeersPage(
-  page = 1,
-  limit = 20,
-): Promise<BeerPageResult> {
+  params: PagingParams = {},
+  defaultLimit = 20,
+): Promise<PageResult<Beer>> {
+  const { skip, limit, page } = toPageRequest(params, defaultLimit);
+
   const response = await fetch(
     `${API_BASE_URL}/beers?page=${page}&limit=${limit}`,
   );
-  const raw = await parseJsonResponse<unknown>(
+  const payload = await parseJsonResponse<BackendPaginatedResponse<Beer>>(
     response,
     "Failed to load beers",
   );
 
-  if (Array.isArray(raw)) {
-    const items = raw as Beer[];
-    return {
-      items,
-      page,
-      hasMore: items.length >= limit,
-    };
-  }
-
-  const data = (raw as { data?: Beer[] }).data;
-  const pagination = (raw as { pagination?: BackendPagination }).pagination;
-  const items = Array.isArray(data) ? data : [];
-  const hasMore = pagination
-    ? pagination.page < pagination.pages
-    : items.length >= limit;
-
-  return {
-    items,
-    page: pagination?.page ?? page,
-    hasMore,
-  };
+  return toPageResult(payload, skip);
 }
 
 export async function searchBeersPage(
   query: string,
-  page = 1,
-  limit = 20,
-): Promise<BeerPageResult> {
+  params: PagingParams = {},
+  defaultLimit = 20,
+): Promise<PageResult<Beer>> {
   const normalizedQuery = query.trim();
+
+  const { skip, limit, page } = toPageRequest(params, defaultLimit);
 
   if (!normalizedQuery) {
     return {
       items: [],
-      page,
+      total: 0,
+      nextSkip: skip,
       hasMore: false,
     };
   }
@@ -85,31 +57,22 @@ export async function searchBeersPage(
   const response = await fetch(
     `${API_BASE_URL}/beers/search?q=${encodeURIComponent(normalizedQuery)}&page=${page}&limit=${limit}`,
   );
-  const raw = await parseJsonResponse<unknown>(response, "Beer search failed");
+  const payload = await parseJsonResponse<
+    BackendPaginatedResponse<BeerSearchApiItem>
+  >(response, "Beer search failed");
 
-  const items: BeerSearchApiItem[] = Array.isArray(raw)
-    ? (raw as BeerSearchApiItem[])
-    : ((raw as { data?: BeerSearchApiItem[] }).data ?? []);
+  // Normalize search items to `Beer` shape
+  const mappedPayload = {
+    data: (payload?.data ?? []).map((item) => ({
+      _id: item.beerId ?? item._id ?? "",
+      name: item.name,
+      brewery: item.brewery,
+      style: item.style,
+      abv: item.abv,
+      description: item.description,
+    })),
+    pagination: payload.pagination,
+  } as BackendPaginatedResponse<Beer>;
 
-  const mappedItems = items.map((item) => ({
-    _id: item.beerId ?? item._id ?? "",
-    name: item.name,
-    brewery: item.brewery,
-    style: item.style,
-    abv: item.abv,
-    description: item.description,
-  }));
-
-  const pagination = Array.isArray(raw)
-    ? undefined
-    : (raw as { pagination?: BackendPagination }).pagination;
-  const hasMore = pagination
-    ? pagination.page < pagination.pages
-    : mappedItems.length >= limit;
-
-  return {
-    items: mappedItems,
-    page: pagination?.page ?? page,
-    hasMore,
-  };
+  return toPageResult(mappedPayload, skip);
 }

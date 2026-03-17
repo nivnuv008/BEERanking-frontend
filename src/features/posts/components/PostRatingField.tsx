@@ -1,7 +1,7 @@
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Form from "react-bootstrap/Form";
 import ToggleButton from "react-bootstrap/ToggleButton";
-import "./PostRatingField.css";
+import "../styles/PostRatingField.css";
 
 type PostRatingFieldProps = {
   label: string;

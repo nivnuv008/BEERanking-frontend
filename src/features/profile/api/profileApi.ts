@@ -1,8 +1,11 @@
-import { API_BASE_URL, parseJsonResponse } from "../../../shared/api/apiClient";
-import type { Beer } from "../../../shared/api/beerApi";
+import {
+  API_BASE_URL,
+  BACKEND_BASE_URL,
+  parseJsonResponse,
+  resolveBackendAssetUrl,
+} from "../../../shared/api/apiClient";
+import type { Beer } from "../../../shared/types/beerType";
 import { fetchWithAuth, setStoredUser } from "../../auth/api/authApi";
-
-const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || "";
 
 export type UserProfile = {
   _id: string;
@@ -53,29 +56,6 @@ export async function updateCurrentUserProfile(
 }
 
 export function getProfileImageUrl(profilePic?: string | null): string | null {
-  if (!profilePic) {
-    return null;
-  }
-
-  if (/^https?:\/\//i.test(profilePic)) {
-    return profilePic;
-  }
-
-  if (profilePic.startsWith("/")) {
-    if (BACKEND_BASE_URL) {
-      return `${BACKEND_BASE_URL.replace(/\/$/, "")}${profilePic}`;
-    }
-
-    if (
-      API_BASE_URL.startsWith("http://") ||
-      API_BASE_URL.startsWith("https://")
-    ) {
-      const apiUrl = new URL(API_BASE_URL);
-      return `${apiUrl.origin}${profilePic}`;
-    }
-
-    return profilePic;
-  }
-
-  return profilePic;
+  const resolved = resolveBackendAssetUrl(profilePic);
+  return resolved || null;
 }

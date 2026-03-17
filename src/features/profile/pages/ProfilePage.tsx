@@ -4,10 +4,11 @@ import { Badge, Button, Card, Form, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import CameraCapture, {
   type CameraCaptureHandle,
-} from "../../camera/CameraCapture";
+} from "../../../shared/components/CameraCapture";
 import BeerSearchPicker from "../../../shared/components/BeerSearchPicker";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
-import type { Beer } from "../../../shared/api/beerApi";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
+import type { Beer } from "../../../shared/types/beerType";
 import { useBeerPickerData } from "../../../shared/hooks/useBeerPickerData";
 import "../styles/ProfilePage.css";
 import { getStoredUser, logout } from "../../auth/api/authApi";
@@ -30,7 +31,6 @@ const MAX_FAVORITE_BEERS = 3;
 function ProfilePage() {
   const navigate = useNavigate();
   const cameraCaptureRef = useRef<CameraCaptureHandle | null>(null);
-  const beerBlurRef = useRef<number | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(() =>
     getStoredUser<UserProfile>(),
   );
@@ -43,7 +43,7 @@ function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isBeerInputFocused, setIsBeerInputFocused] = useState(false);
+
   const [beerPickerError, setBeerPickerError] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -59,6 +59,9 @@ function ProfilePage() {
     ensureCatalogLoaded,
     onScroll: handleBeerResultsScroll,
     reset: resetBeerPicker,
+    isInputFocused,
+    onFocus: handleBeerInputFocus,
+    onBlur: handleBeerInputBlur,
   } = useBeerPickerData({
     enabled: isEditing,
     debounceMs: 350,
@@ -67,13 +70,6 @@ function ProfilePage() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      navigate("/", { replace: true });
-      return;
-    }
-
     const loadProfile = async () => {
       try {
         setIsLoading(true);
@@ -81,18 +77,14 @@ function ProfilePage() {
         const userProfile = await getCurrentUserProfile();
         setProfile(userProfile);
       } catch (loadError: unknown) {
-        const message =
-          loadError instanceof Error
-            ? loadError.message
-            : "Failed to load profile";
-        setError(message);
+        setError(getErrorMessage(loadError, "Failed to load profile"));
       } finally {
         setIsLoading(false);
       }
     };
 
     void loadProfile();
-  }, [navigate]);
+  }, []);
 
   useEffect(() => {
     if (!profile) {
@@ -106,21 +98,6 @@ function ProfilePage() {
       previewUrl: getProfileImageUrl(profile.profilePic),
     });
   }, [profile]);
-
-  const handleBeerInputFocus = () => {
-    if (beerBlurRef.current) {
-      window.clearTimeout(beerBlurRef.current);
-    }
-    setBeerPickerError("");
-    ensureCatalogLoaded();
-    setIsBeerInputFocused(true);
-  };
-
-  const handleBeerInputBlur = () => {
-    beerBlurRef.current = window.setTimeout(() => {
-      setIsBeerInputFocused(false);
-    }, 150);
-  };
 
   const handleEditToggle = () => {
     if (!profile) {
@@ -204,11 +181,7 @@ function ProfilePage() {
       resetBeerPicker();
       setSuccessMessage("Profile updated successfully");
     } catch (saveError: unknown) {
-      const message =
-        saveError instanceof Error
-          ? saveError.message
-          : "Failed to update profile";
-      setError(message);
+      setError(getErrorMessage(saveError, "Failed to update profile"));
     } finally {
       setIsSaving(false);
     }
@@ -456,7 +429,7 @@ function ProfilePage() {
                       }}
                       onFocus={handleBeerInputFocus}
                       onBlur={handleBeerInputBlur}
-                      isOpen={isBeerInputFocused}
+                      isOpen={isInputFocused}
                       beers={displayedBeers}
                       hasActiveQuery={hasActiveQuery}
                       isSearching={isSearching}

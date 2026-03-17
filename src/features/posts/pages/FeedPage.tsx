@@ -1,33 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge, Card, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { getAuthToken } from "../../auth/api/authApi";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
-import { getFeedPosts, type FeedPost } from "../api/feedApi";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
+import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
+import { mergeById } from "../../../shared/utils/mergeById";
+import type { FeedPost } from "../types/post";
+import { getFeedPosts } from "../api/feedApi";
 import PostCard from "../components/PostCard";
 import "../styles/FeedPage.css";
 
 const PAGE_SIZE = 4;
 
-function mergePosts(
-  currentPosts: FeedPost[],
-  nextPosts: FeedPost[],
-): FeedPost[] {
-  const existingIds = new Set(currentPosts.map((post) => post._id));
-  const merged = [...currentPosts];
-
-  nextPosts.forEach((post) => {
-    if (!existingIds.has(post._id)) {
-      merged.push(post);
-    }
-  });
-
-  return merged;
-}
-
 function FeedPage() {
   const navigate = useNavigate();
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [nextSkip, setNextSkip] = useState(0);
   const [totalPosts, setTotalPosts] = useState(0);
@@ -35,12 +21,6 @@ function FeedPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!getAuthToken()) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate]);
 
   const loadPosts = async (reset = false) => {
     const targetSkip = reset ? 0 : nextSkip;
@@ -55,16 +35,14 @@ function FeedPage() {
       const result = await getFeedPosts({ skip: targetSkip, limit: PAGE_SIZE });
 
       setPosts((currentPosts) =>
-        reset ? result.items : mergePosts(currentPosts, result.items),
+        reset ? result.items : mergeById(currentPosts, result.items),
       );
       setNextSkip(result.nextSkip);
       setTotalPosts(result.total);
       setHasMore(result.hasMore);
       setError("");
     } catch (loadError: unknown) {
-      const message =
-        loadError instanceof Error ? loadError.message : "Failed to load feed";
-      setError(message);
+      setError(getErrorMessage(loadError, "Failed to load feed"));
     } finally {
       setIsInitialLoading(false);
       setIsLoadingMore(false);
@@ -76,36 +54,10 @@ function FeedPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-
-    if (!sentinel || !hasMore || isInitialLoading || isLoadingMore || error) {
-      return;
-    }
-
-    const root = document.querySelector(".app-shell__content");
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-
-        if (entry?.isIntersecting) {
-          void loadPosts(false);
-        }
-      },
-      {
-        root,
-        rootMargin: "0px 0px 260px 0px",
-        threshold: 0,
-      },
-    );
-
-    observer.observe(sentinel);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [error, hasMore, isInitialLoading, isLoadingMore, nextSkip]);
+  const { sentinelRef } = useInfiniteScroll({
+    enabled: hasMore && !isInitialLoading && !isLoadingMore && !error,
+    onIntersect: () => loadPosts(false),
+  });
 
   const handleRetry = () => {
     void loadPosts(true);

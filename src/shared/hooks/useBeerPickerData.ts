@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { UIEvent } from "react";
-import { getBeersPage, searchBeersPage, type Beer } from "../api/beerApi";
+import { getBeersPage, searchBeersPage } from "../api/beerApi";
+import type { Beer } from "../types/beerType";
 
 type UseBeerPickerDataOptions = {
   enabled?: boolean;
@@ -22,6 +23,9 @@ type UseBeerPickerDataResult = {
   ensureCatalogLoaded: () => void;
   onScroll: (event: UIEvent<HTMLDivElement>) => void;
   reset: () => void;
+  isInputFocused: boolean;
+  onFocus: () => void;
+  onBlur: () => void;
 };
 
 function mergeUniqueBeers(existing: Beer[], incoming: Beer[]): Beer[] {
@@ -47,13 +51,15 @@ export function useBeerPickerData(
   } = options;
 
   const searchTimeoutRef = useRef<number | null>(null);
+  const beerBlurRef = useRef<number | null>(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const [query, setQuery] = useState("");
   const [catalogBeers, setCatalogBeers] = useState<Beer[]>([]);
   const [searchResults, setSearchResults] = useState<Beer[]>([]);
-  const [catalogPage, setCatalogPage] = useState(0);
+  const [catalogSkip, setCatalogSkip] = useState(0);
   const [catalogHasMore, setCatalogHasMore] = useState(true);
   const [isLoadingCatalogPage, setIsLoadingCatalogPage] = useState(false);
-  const [searchPage, setSearchPage] = useState(0);
+  const [searchSkip, setSearchSkip] = useState(0);
   const [searchHasMore, setSearchHasMore] = useState(false);
   const [isLoadingSearchPage, setIsLoadingSearchPage] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -67,10 +73,12 @@ export function useBeerPickerData(
 
     try {
       setIsLoadingCatalogPage(true);
-      const nextPage = catalogPage + 1;
-      const result = await getBeersPage(nextPage, pageSize);
+      const result = await getBeersPage(
+        { skip: catalogSkip, limit: pageSize },
+        pageSize,
+      );
       setCatalogBeers((current) => mergeUniqueBeers(current, result.items));
-      setCatalogPage(result.page);
+      setCatalogSkip(result.nextSkip);
       setCatalogHasMore(result.hasMore);
     } catch {
       setCatalogHasMore(false);
@@ -81,7 +89,7 @@ export function useBeerPickerData(
     enabled,
     isLoadingCatalogPage,
     catalogHasMore,
-    catalogPage,
+    catalogSkip,
     pageSize,
     onError,
   ]);
@@ -100,10 +108,13 @@ export function useBeerPickerData(
 
     try {
       setIsLoadingSearchPage(true);
-      const nextPage = searchPage + 1;
-      const result = await searchBeersPage(normalizedQuery, nextPage, pageSize);
+      const result = await searchBeersPage(
+        normalizedQuery,
+        { skip: searchSkip, limit: pageSize },
+        pageSize,
+      );
       setSearchResults((current) => mergeUniqueBeers(current, result.items));
-      setSearchPage(result.page);
+      setSearchSkip(result.nextSkip);
       setSearchHasMore(result.hasMore);
     } catch (error) {
       setSearchHasMore(false);
@@ -119,23 +130,23 @@ export function useBeerPickerData(
     minQueryLength,
     isLoadingSearchPage,
     searchHasMore,
-    searchPage,
+    searchSkip,
     pageSize,
     onError,
   ]);
 
   const ensureCatalogLoaded = useCallback(() => {
-    if (!enabled || catalogBeers.length > 0 || catalogPage > 0) {
+    if (!enabled || catalogBeers.length > 0 || catalogSkip > 0) {
       return;
     }
 
     void loadNextCatalogPage();
-  }, [enabled, catalogBeers.length, catalogPage, loadNextCatalogPage]);
+  }, [enabled, catalogBeers.length, catalogSkip, loadNextCatalogPage]);
 
   const reset = useCallback(() => {
     setQuery("");
     setSearchResults([]);
-    setSearchPage(0);
+    setSearchSkip(0);
     setSearchHasMore(false);
     setIsSearching(false);
   }, []);
@@ -174,6 +185,22 @@ export function useBeerPickerData(
     }
   }, [enabled, preloadCatalog, ensureCatalogLoaded]);
 
+  const onFocus = useCallback(() => {
+    if (beerBlurRef.current) {
+      window.clearTimeout(beerBlurRef.current);
+    }
+
+    onError?.("");
+    ensureCatalogLoaded();
+    setIsInputFocused(true);
+  }, [ensureCatalogLoaded, onError]);
+
+  const onBlur = useCallback(() => {
+    beerBlurRef.current = window.setTimeout(() => {
+      setIsInputFocused(false);
+    }, 150);
+  }, []);
+
   useEffect(() => {
     if (!enabled) {
       return;
@@ -183,7 +210,7 @@ export function useBeerPickerData(
 
     if (normalizedQuery.length < minQueryLength) {
       setSearchResults([]);
-      setSearchPage(0);
+      setSearchSkip(0);
       setSearchHasMore(false);
       setIsSearching(false);
       return;
@@ -198,9 +225,13 @@ export function useBeerPickerData(
 
     searchTimeoutRef.current = window.setTimeout(async () => {
       try {
-        const result = await searchBeersPage(normalizedQuery, 1, pageSize);
+        const result = await searchBeersPage(
+          normalizedQuery,
+          { skip: 0, limit: pageSize },
+          pageSize,
+        );
         setSearchResults(result.items);
-        setSearchPage(result.page);
+        setSearchSkip(result.nextSkip);
         setSearchHasMore(result.hasMore);
       } catch (error) {
         const message =
@@ -223,6 +254,10 @@ export function useBeerPickerData(
       if (searchTimeoutRef.current) {
         window.clearTimeout(searchTimeoutRef.current);
       }
+
+      if (beerBlurRef.current) {
+        window.clearTimeout(beerBlurRef.current);
+      }
     };
   }, []);
 
@@ -237,5 +272,8 @@ export function useBeerPickerData(
     ensureCatalogLoaded,
     onScroll,
     reset,
+    isInputFocused,
+    onFocus,
+    onBlur,
   };
 }

@@ -1,27 +1,27 @@
-.welcome-page {
+.sign-in-page {
   background: var(--app-page-background);
 }
 
-.welcome-page__hero {
+.sign-in-page__hero {
   padding: 4rem;
 }
 
-.welcome-page__hero-content {
+.sign-in-page__hero-content {
   max-width: 760px;
 }
 
-.welcome-page__title {
+.sign-in-page__title {
   color: #1f2329;
   line-height: 1.08;
   letter-spacing: -0.04em;
   text-wrap: balance;
 }
 
-.welcome-page__logo-shell {
+.sign-in-page__logo-shell {
   margin-bottom: 2rem;
 }
 
-.welcome-page__logo {
+.sign-in-page__logo {
   display: block;
   width: clamp(7.5rem, 16vw, 10.25rem);
   height: auto;
@@ -30,66 +30,66 @@
   filter: drop-shadow(0 12px 20px rgba(90, 49, 9, 0.12));
 }
 
-.welcome-page__panel {
+.sign-in-page__panel {
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(6px);
 }
 
-.welcome-page__form-shell {
+.sign-in-page__form-shell {
   padding: 2.2rem;
   border-radius: 1.75rem;
   background: rgba(255, 255, 255, 0.8);
   box-shadow: 0 18px 40px rgba(31, 35, 41, 0.08);
 }
 
-.welcome-page__clear-session {
+.sign-in-page__clear-session {
   color: #7a4a10;
   text-decoration: none;
 }
 
-.welcome-page__clear-session:hover {
+.sign-in-page__clear-session:hover {
   color: #5a3109;
 }
 
 @media (max-width: 1024px) {
-  .welcome-page__hero {
+  .sign-in-page__hero {
     padding: 3rem;
   }
 }
 
 @media (max-width: 768px) {
-  .welcome-page__hero {
+  .sign-in-page__hero {
     padding: 3rem 1.75rem 2rem;
   }
 
-  .welcome-page__panel {
+  .sign-in-page__panel {
     padding: 2rem 1.5rem;
   }
 
-  .welcome-page__form-shell {
+  .sign-in-page__form-shell {
     padding: 1.5rem;
     border-radius: 1.25rem;
   }
 
-  .welcome-page__logo-shell {
+  .sign-in-page__logo-shell {
     margin-bottom: 1.5rem;
   }
 
-  .welcome-page__logo {
+  .sign-in-page__logo {
     width: clamp(6.75rem, 24vw, 8.75rem);
   }
 }
 
 @media (max-width: 480px) {
-  .welcome-page__hero {
+  .sign-in-page__hero {
     padding: 2.5rem 1.25rem 1.75rem;
   }
 
-  .welcome-page__panel {
+  .sign-in-page__panel {
     padding: 1.25rem;
   }
 
-  .welcome-page__logo {
+  .sign-in-page__logo {
     width: clamp(5.75rem, 28vw, 7rem);
   }
 }

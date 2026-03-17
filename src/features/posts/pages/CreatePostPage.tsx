@@ -4,17 +4,16 @@ import { useNavigate } from "react-router-dom";
 import Badge from "react-bootstrap/Badge";
 import CameraCapture, {
   type CameraCaptureHandle,
-} from "../../camera/CameraCapture";
+} from "../../../shared/components/CameraCapture";
 import BeerSearchPicker from "../../../shared/components/BeerSearchPicker";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
 import { useBeerPickerData } from "../../../shared/hooks/useBeerPickerData";
 import PostRatingField from "../components/PostRatingField";
 import "../styles/CreatePostPage.css";
-import { getAuthToken } from "../../auth/api/authApi";
-import { type Beer } from "../../../shared/api/beerApi";
+import { type Beer } from "../../../shared/types/beerType";
 import { createPost } from "../api/postApi";
-
-const DESCRIPTION_LIMIT = 1000;
+import { POST_DESCRIPTION_LIMIT } from "../constants/postConstants";
 
 function normalizeText(value: string): string {
   return value.trim().toLowerCase();
@@ -24,9 +23,7 @@ function CreatePostPage() {
   const navigate = useNavigate();
   const previewUrlRef = useRef<string | null>(null);
   const cameraCaptureRef = useRef<CameraCaptureHandle | null>(null);
-  const beerBlurRef = useRef<number | null>(null);
   const [selectedBeer, setSelectedBeer] = useState<Beer | null>(null);
-  const [isBeerInputFocused, setIsBeerInputFocused] = useState(false);
   const [rating, setRating] = useState(4);
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -48,6 +45,9 @@ function CreatePostPage() {
     ensureCatalogLoaded,
     onScroll: handleBeerResultsScroll,
     reset: resetBeerPicker,
+    isInputFocused,
+    onFocus: handleBeerInputFocus,
+    onBlur: handleBeerInputBlur,
   } = useBeerPickerData({
     debounceMs: 300,
     preloadCatalog: false,
@@ -55,17 +55,7 @@ function CreatePostPage() {
   });
 
   useEffect(() => {
-    if (!getAuthToken()) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate]);
-
-  useEffect(() => {
     return () => {
-      if (beerBlurRef.current) {
-        window.clearTimeout(beerBlurRef.current);
-      }
-
       if (previewUrlRef.current) {
         URL.revokeObjectURL(previewUrlRef.current);
       }
@@ -127,7 +117,7 @@ function CreatePostPage() {
   const handleSelectBeer = (beer: Beer) => {
     setSelectedBeer(beer);
     setBeerQuery(beer.name);
-    setIsBeerInputFocused(false);
+    // picker will be closed via hook's state
     setBeerPickerError("");
     setError("");
   };
@@ -136,21 +126,6 @@ function CreatePostPage() {
     setSelectedBeer(null);
     resetBeerPicker();
     setBeerPickerError("");
-  };
-
-  const handleBeerInputFocus = () => {
-    if (beerBlurRef.current) {
-      window.clearTimeout(beerBlurRef.current);
-    }
-    setBeerPickerError("");
-    ensureCatalogLoaded();
-    setIsBeerInputFocused(true);
-  };
-
-  const handleBeerInputBlur = () => {
-    beerBlurRef.current = window.setTimeout(() => {
-      setIsBeerInputFocused(false);
-    }, 150);
   };
 
   const handleResetForm = () => {
@@ -195,8 +170,8 @@ function CreatePostPage() {
       return "Description is required";
     }
 
-    if (description.trim().length > DESCRIPTION_LIMIT) {
-      return `Description must be ${DESCRIPTION_LIMIT} characters or less`;
+    if (description.trim().length > POST_DESCRIPTION_LIMIT) {
+      return `Description must be ${POST_DESCRIPTION_LIMIT} characters or less`;
     }
 
     return "";
@@ -227,18 +202,14 @@ function CreatePostPage() {
       handleResetForm();
       setSuccessMessage(response.message || "Post created successfully");
     } catch (submitError: unknown) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : "Failed to create post";
-      setError(message);
+      setError(getErrorMessage(submitError, "Failed to create post"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const descriptionLength = description.trimStart().length;
-  const showBeerDropdown = isBeerInputFocused && !selectedBeer;
+  const showBeerDropdown = isInputFocused && !selectedBeer;
   const submitValidationMessage = validateForm(
     selectedBeer ?? getMatchedBeer(),
   );
@@ -492,7 +463,7 @@ function CreatePostPage() {
                   id="post-description"
                   className="form-control create-post-form__textarea"
                   rows={3}
-                  maxLength={DESCRIPTION_LIMIT}
+                  maxLength={POST_DESCRIPTION_LIMIT}
                   placeholder="Aroma, body, finish, setting, or why you would order it again."
                   value={description}
                   onChange={(event) => {
@@ -502,7 +473,7 @@ function CreatePostPage() {
                 />
                 <div className="create-post-form__footer-note d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3">
                   <strong>
-                    {descriptionLength}/{DESCRIPTION_LIMIT}
+                    {descriptionLength}/{POST_DESCRIPTION_LIMIT}
                   </strong>
                 </div>
               </div>

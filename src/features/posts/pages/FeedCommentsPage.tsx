@@ -1,65 +1,33 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import Spinner from "react-bootstrap/Spinner";
-import { getAuthToken } from "../../auth/api/authApi";
 import { getProfileImageUrl } from "../../profile/api/profileApi";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
+import { useInfiniteScroll } from "../../../shared/hooks/useInfiniteScroll";
+import { mergeById } from "../../../shared/utils/mergeById";
+import type { FeedComment, FeedPost } from "../types/post";
 import {
   createPostComment,
   getFeedPostById,
   getPostComments,
-  type FeedComment,
-  type FeedPost,
 } from "../api/feedApi";
 import PostCard from "../components/PostCard";
 import "../styles/FeedPage.css";
+import { formatDateTime, getInitials } from "../utils/postDisplay";
 
 const PAGE_SIZE = 20;
-
-function mergeComments(
-  currentComments: FeedComment[],
-  nextComments: FeedComment[],
-): FeedComment[] {
-  const existingIds = new Set(currentComments.map((comment) => comment._id));
-  const merged = [...currentComments];
-
-  nextComments.forEach((comment) => {
-    if (!existingIds.has(comment._id)) {
-      merged.push(comment);
-    }
-  });
-
-  return merged;
-}
 
 type FeedCommentsLocationState = {
   post?: FeedPost;
   returnTo?: string;
   returnLabel?: string;
 };
-
-function formatDateTime(value: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function getInitials(username: string): string {
-  return username
-    .split(/\s+/)
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 function FeedCommentsPage() {
   const navigate = useNavigate();
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { postId } = useParams();
   const location = useLocation();
   const locationState = location.state as FeedCommentsLocationState | null;
@@ -77,12 +45,6 @@ function FeedCommentsPage() {
   const [commentText, setCommentText] = useState("");
   const [commentMessage, setCommentMessage] = useState("");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!getAuthToken()) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate]);
 
   useEffect(() => {
     if (!postId) {
@@ -104,18 +66,13 @@ function FeedCommentsPage() {
         }
 
         setPost(resolvedPost);
-        syncPosts(resolvedPost ? [resolvedPost] : [], true);
         setComments(initialComments.items);
         setNextSkip(initialComments.nextSkip);
         setTotalComments(initialComments.total);
         setHasMore(initialComments.hasMore);
         setError("");
       } catch (loadError: unknown) {
-        const message =
-          loadError instanceof Error
-            ? loadError.message
-            : "Failed to load comments screen";
-        setError(message);
+        setError(getErrorMessage(loadError, "Failed to load comments screen"));
       } finally {
         setIsLoading(false);
       }
@@ -138,53 +95,23 @@ function FeedCommentsPage() {
       });
 
       setComments((currentComments) =>
-        mergeComments(currentComments, result.items),
+        mergeById(currentComments, result.items),
       );
       setNextSkip(result.nextSkip);
       setTotalComments(result.total);
       setHasMore(result.hasMore);
       setError("");
     } catch (loadError: unknown) {
-      const message =
-        loadError instanceof Error
-          ? loadError.message
-          : "Failed to load more comments";
-      setError(message);
+      setError(getErrorMessage(loadError, "Failed to load more comments"));
     } finally {
       setIsLoadingMore(false);
     }
   };
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-
-    if (!sentinel || isLoading || isLoadingMore || !hasMore || error) {
-      return;
-    }
-
-    const root = document.querySelector(".app-shell__content");
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-
-        if (entry?.isIntersecting) {
-          void loadMoreComments();
-        }
-      },
-      {
-        root,
-        rootMargin: "0px 0px 260px 0px",
-        threshold: 0,
-      },
-    );
-
-    observer.observe(sentinel);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [error, hasMore, isLoading, isLoadingMore, nextSkip]);
+  const { sentinelRef } = useInfiniteScroll({
+    enabled: !isLoading && !isLoadingMore && hasMore && !error,
+    onIntersect: loadMoreComments,
+  });
 
   if (isLoading) {
     return (
@@ -234,11 +161,7 @@ function FeedCommentsPage() {
       setCommentMessage("Comment added.");
       setError("");
     } catch (submitError: unknown) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : "Failed to add comment";
-      setError(message);
+      setError(getErrorMessage(submitError, "Failed to add comment"));
       setCommentMessage("");
     } finally {
       setIsSubmittingComment(false);

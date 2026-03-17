@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import Button from "react-bootstrap/Button";
+import type { FeedPost } from "../types/post";
 import { getProfileImageUrl } from "../../profile/api/profileApi";
-import { togglePostLike, type FeedPost } from "../api/feedApi";
+import { togglePostLike } from "../api/feedApi";
+import { formatDateTime, getInitials } from "../utils/postDisplay";
 
 type PostCardProps = {
   post: FeedPost;
@@ -10,22 +12,6 @@ type PostCardProps = {
   onOpenComments?: (post: FeedPost) => void;
   footerActions?: ReactNode;
 };
-
-function formatDateTime(value: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function getInitials(username: string): string {
-  return username
-    .split(/\s+/)
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 function HeartIcon() {
   return (

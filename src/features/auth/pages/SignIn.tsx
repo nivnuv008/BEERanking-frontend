@@ -1,17 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Button, Card, Form } from "react-bootstrap";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import FeedbackToast from "../../../shared/components/FeedbackToast";
-import "../styles/WelcomePage.css";
+import { getErrorMessage } from "../../../shared/utils/getErrorMessage";
+import "../styles/SignIn.css";
 import {
   getAuthRedirectPath,
   logout,
   persistAuthSession,
   signIn,
   signInWithGoogle,
-} from "../../auth/api/authApi";
-import { getGoogleIdToken } from "../../auth/api/googleAuth";
+} from "../api/authApi";
+import { useGoogleAuth } from "../hooks/useGoogleAuth";
 import GoogleLogo from "../../../shared/assets/google-logo.svg";
 
 type SignInFormData = {
@@ -19,24 +20,14 @@ type SignInFormData = {
   password: string;
 };
 
-function WelcomePage() {
+function SignIn() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [formData, setFormData] = useState<SignInFormData>({
     username: "",
     password: "",
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const redirectPath = getAuthRedirectPath();
-
-    if (token && redirectPath !== location.pathname) {
-      navigate(redirectPath, { replace: true });
-    }
-  }, [location.pathname, navigate]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -47,6 +38,12 @@ function WelcomePage() {
       [fieldName]: value,
     }));
   };
+
+  const handleGoogleAuth = useGoogleAuth({
+    setIsSubmitting,
+    setError,
+    navigate,
+  });
 
   const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -68,32 +65,7 @@ function WelcomePage() {
       persistAuthSession(response);
       navigate(getAuthRedirectPath(), { replace: true });
     } catch (submitError: unknown) {
-      const message =
-        submitError instanceof Error ? submitError.message : "Sign in failed";
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsSubmitting(true);
-      setError("");
-
-      const googleToken = await getGoogleIdToken(
-        import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      );
-      const response = await signInWithGoogle(googleToken);
-
-      persistAuthSession(response);
-      navigate(getAuthRedirectPath(), { replace: true });
-    } catch (googleError: unknown) {
-      const message =
-        googleError instanceof Error
-          ? googleError.message
-          : "Google sign in failed";
-      setError(message);
+      setError(getErrorMessage(submitError, "Sign in failed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -111,7 +83,7 @@ function WelcomePage() {
   const showClearSession = Boolean(localStorage.getItem("token"));
 
   return (
-    <div className="container-fluid min-vh-100 welcome-page position-relative">
+    <div className="container-fluid min-vh-100 sign-in-page position-relative">
       {error ? (
         <FeedbackToast
           show
@@ -123,16 +95,16 @@ function WelcomePage() {
       ) : null}
 
       <div className="row min-vh-100">
-        <div className="col-lg-7 d-flex align-items-center justify-content-center welcome-page__hero">
-          <div className="text-center welcome-page__hero-content">
-            <div className="welcome-page__logo-shell">
+        <div className="col-lg-7 d-flex align-items-center justify-content-center sign-in-page__hero">
+          <div className="text-center sign-in-page__hero-content">
+            <div className="sign-in-page__logo-shell">
               <img
                 src="/beer-cheers.png"
                 alt="BEERanking"
-                className="welcome-page__logo"
+                className="sign-in-page__logo"
               />
             </div>
-            <h1 className="display-4 fw-bold welcome-page__title">
+            <h1 className="display-4 fw-bold sign-in-page__title">
               Discover and rank the world's{" "}
               <span className="text-warning">best beers</span>, or{" "}
               <span className="text-warning">just watch</span> who's drinking
@@ -141,9 +113,9 @@ function WelcomePage() {
           </div>
         </div>
 
-        <div className="col-lg-5 d-flex align-items-center justify-content-center p-5 welcome-page__panel">
+        <div className="col-lg-5 d-flex align-items-center justify-content-center p-5 sign-in-page__panel">
           <Card
-            className="w-100 welcome-page__form-shell border-0"
+            className="w-100 sign-in-page__form-shell border-0"
             style={{ maxWidth: "400px" }}
           >
             <Card.Body className="p-0">
@@ -186,7 +158,9 @@ function WelcomePage() {
                   type="button"
                   variant="outline-secondary"
                   className="w-100 d-flex align-items-center justify-content-center gap-2 mb-3"
-                  onClick={handleGoogleSignIn}
+                  onClick={() =>
+                    handleGoogleAuth(signInWithGoogle, "Google sign in failed")
+                  }
                   disabled={isSubmitting}
                 >
                   <img src={GoogleLogo} alt="Google" width="18" height="18" />
@@ -206,7 +180,7 @@ function WelcomePage() {
                   <Button
                     type="button"
                     variant="link"
-                    className="w-100 mt-3 welcome-page__clear-session"
+                    className="w-100 mt-3 sign-in-page__clear-session"
                     onClick={handleClearSession}
                   >
                     Clear saved session
@@ -221,4 +195,4 @@ function WelcomePage() {
   );
 }
 
-export default WelcomePage;
+export default SignIn;

@@ -1,5 +1,5 @@
 import { Badge } from "react-bootstrap";
-import { type SommelierBeer } from "../api/aisommelierApi";
+import { type SommelierBeer } from "../api/AISommelierApi";
 
 type BeerCardProps = {
   beer: SommelierBeer;

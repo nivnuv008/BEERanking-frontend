@@ -8,7 +8,7 @@ import MyPostsPage from "../features/posts/pages/MyPostsPage";
 import ProfilePage from "../features/profile/pages/ProfilePage";
 import SignIn from "../features/auth/pages/SignIn";
 import GuestRoute from "./GuestRoute";
-import { AISommelier } from "../features/aisommelier/pages/AISommelier";
+import { AISommelier } from "../features/AISommelier/pages/AISommelier";
 import ProtectedRoute from "./ProtectedRoute";
 
 function App() {
